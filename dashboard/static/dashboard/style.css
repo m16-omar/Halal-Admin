@@ -495,9 +495,26 @@ body {
 /* Grid Layouts */
 .grid-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
     margin-bottom: 24px;
+}
+
+.grid-stats .glass-card {
+    padding: 16px;
+    margin-bottom: 0;
+}
+
+@media (min-width: 768px) {
+    .grid-stats {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 1200px) {
+    .grid-stats {
+        grid-template-columns: repeat(6, 1fr);
+    }
 }
 
 .grid-charts {
@@ -530,33 +547,35 @@ body {
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
 }
 
 .stat-icon-wrapper {
-    width: 42px;
-    height: 42px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     background: var(--primary-light);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
-    margin-bottom: 12px;
+    font-size: 1.1rem;
+    margin-bottom: 6px;
 }
 
 .stat-card-title {
-    font-size: 0.88rem;
+    font-size: 0.78rem;
     font-weight: 500;
     color: var(--text-muted);
+    margin-top: 2px;
 }
 
 .stat-card-value {
-    font-family: var(--font-outfit);
-    font-size: 2.1rem;
+    font-family: var(--font-amiri);
+    font-size: 1.85rem;
     font-weight: 700;
     color: var(--primary);
-    line-height: 1;
+    line-height: 1.1;
+    margin-top: 4px;
 }
 
 .stat-card-trend-badge {
