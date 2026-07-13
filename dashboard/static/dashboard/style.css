@@ -220,12 +220,14 @@ body {
     transform: translateX(0);
 }
 
-/* Overlay backdrop */
+/* Overlay backdrop — sits below topbar so toggle stays clickable */
 .sidebar-overlay {
     display: none;
     position: fixed;
-    inset: 0;
+    top: 70px;              /* start below the topbar */
     left: var(--rail-width);
+    right: 0;
+    bottom: 0;
     background: rgba(0,0,0,0.3);
     z-index: 104;
     opacity: 0;
@@ -418,7 +420,7 @@ body {
     padding: 0 32px;
     position: sticky;
     top: 0;
-    z-index: 90;
+    z-index: 115; /* above nav-rail (110), sidebar (105) and overlay (104) */
 }
 
 .topbar-left {
