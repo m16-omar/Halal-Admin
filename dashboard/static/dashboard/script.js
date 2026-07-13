@@ -254,11 +254,20 @@ function initOnlineCounter() {
 }
 
 function initSidebarToggle() {
-    const toggleBtn = document.getElementById('sidebarToggle');
-    const sidebar = document.querySelector('.sidebar');
-    if (toggleBtn && sidebar) {
-        toggleBtn.addEventListener('click', function() {
-            sidebar.classList.toggle('active');
-        });
-    }
+    const toggleBtn    = document.getElementById('sidebarToggle');
+    const closeBtn     = document.getElementById('sidebarClose');
+    const overlay      = document.getElementById('sidebarOverlay');
+    const appContainer = document.getElementById('appContainer');
+
+    function openSidebar()  { appContainer.classList.add('sidebar-open'); }
+    function closeSidebar() { appContainer.classList.remove('sidebar-open'); }
+
+    if (toggleBtn)  toggleBtn.addEventListener('click', openSidebar);
+    if (closeBtn)   closeBtn.addEventListener('click', closeSidebar);
+    if (overlay)    overlay.addEventListener('click', closeSidebar);
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeSidebar();
+    });
 }

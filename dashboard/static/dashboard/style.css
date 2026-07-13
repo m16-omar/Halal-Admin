@@ -23,6 +23,7 @@
     --text-main: #1e293b;       /* Dark slate main text */
     --text-muted: #64748b;     /* Muted slate text */
     
+    --rail-width: 60px;
     --sidebar-width: 260px;
     --shadow: 0 4px 18px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
     
@@ -61,23 +62,185 @@ body {
     background: var(--secondary);
 }
 
-/* Base Layout Structure */
+/* ═══════════════════════════════════════
+   BASE LAYOUT
+═══════════════════════════════════════ */
 .app-container {
     display: flex;
     min-height: 100vh;
 }
 
-/* Sidebar Layout */
+/* ═══════════════════════════════════════
+   NARROW ICON RAIL  (always visible)
+═══════════════════════════════════════ */
+.nav-rail {
+    width: var(--rail-width);
+    background: var(--bg-secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 110;
+    padding: 0;
+    border-right: 1px solid rgba(255,255,255,0.06);
+    flex-shrink: 0;
+}
+
+.rail-brand {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.rail-logo {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    border-radius: 6px;
+    background: #fff;
+    padding: 2px;
+}
+
+.rail-links {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 12px 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.rail-link {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.rail-link:hover {
+    background: rgba(255,255,255,0.08);
+    color: #ffffff;
+}
+
+.rail-link.active {
+    background: rgba(255,255,255,0.12);
+    color: var(--secondary);
+    box-shadow: inset 0 0 0 1px rgba(217,119,6,0.3);
+}
+
+/* Tooltip on hover */
+.rail-link::after {
+    content: attr(title);
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--primary);
+    color: #fff;
+    font-family: var(--font-inter);
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+    padding: 5px 10px;
+    border-radius: 6px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.rail-link:hover::after {
+    opacity: 1;
+}
+
+.rail-profile {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 0;
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.rail-avatar {
+    width: 34px;
+    height: 34px;
+    background: var(--secondary);
+    color: #fff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-outfit);
+    font-weight: 700;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.rail-avatar:hover { transform: scale(1.08); }
+
+/* ═══════════════════════════════════════
+   FULL SIDEBAR (slides in as overlay)
+═══════════════════════════════════════ */
 .sidebar {
     width: var(--sidebar-width);
     background: var(--bg-secondary);
     display: flex;
     flex-direction: column;
     position: fixed;
+    top: 0;
+    left: var(--rail-width);  /* starts just to the right of the rail */
     height: 100vh;
-    z-index: 100;
-    transition: all 0.3s ease;
+    z-index: 105;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border-right: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+}
+
+/* Open state */
+.sidebar-open .sidebar {
+    transform: translateX(0);
+}
+
+/* Overlay backdrop */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    left: var(--rail-width);
+    background: rgba(0,0,0,0.3);
+    z-index: 104;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(2px);
+}
+
+.sidebar-open .sidebar-overlay {
+    display: block;
+    opacity: 1;
+}
+
+/* Old collapsed state kept for compatibility */
+.sidebar-collapsed .main-wrapper {
+    margin-left: var(--rail-width);
 }
 
 .sidebar-brand {
@@ -234,10 +397,10 @@ body {
     font-weight: 500;
 }
 
-/* Main Content Area */
+/* Main Content Area — offset only by rail width */
 .main-wrapper {
     flex-grow: 1;
-    margin-left: var(--sidebar-width);
+    margin-left: var(--rail-width);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -268,13 +431,52 @@ body {
 
 .sidebar-toggle {
     background: none;
-    border: none;
+    border: 1px solid var(--border-color);
     color: var(--text-muted);
     cursor: pointer;
-    display: none; /* Desktop default */
+    display: flex;
     align-items: center;
     justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
 }
+
+.sidebar-toggle:hover {
+    background: #f4f3ed;
+    color: var(--primary);
+    border-color: #d1cfc7;
+}
+
+/* Close button inside the overlay sidebar */
+.sidebar-close {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.5);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+.sidebar-close:hover {
+    background: rgba(255,255,255,0.08);
+    color: #ffffff;
+}
+.sidebar-brand {
+    padding: 20px 20px 20px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
 
 .search-container {
     position: relative;

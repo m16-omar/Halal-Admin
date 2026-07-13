@@ -310,6 +310,7 @@ def api_login(request):
                         'gender': seeker.gender,
                         'state': seeker.state,
                         'status': seeker.status,
+                        'wali_name': seeker.wali_name,
                     }
                 })
             else:
@@ -367,6 +368,7 @@ def api_seekers(request):
                     'gender': seeker.gender,
                     'state': seeker.state,
                     'status': seeker.status,
+                    'wali_name': seeker.wali_name,
                 }
             })
         except Exception as e:
