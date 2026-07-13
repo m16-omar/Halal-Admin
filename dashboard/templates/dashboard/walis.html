@@ -1,0 +1,65 @@
+{% extends 'dashboard/base.html' %}
+
+{% block page_title %}Walis Management{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <div class="card-header-bar">
+        <h2 class="card-title">Chaperone Guardians (Walis)</h2>
+        <span style="font-size: 0.9rem; color: var(--text-muted);">{{ walis.count }} active Walis</span>
+    </div>
+
+    <!-- Search bar -->
+    <form method="GET" action="{% url 'walis' %}" class="search-filter-bar">
+        <input type="text" name="search" placeholder="Search by Wali or Seeker..." value="{{ search_query }}" class="input-custom" style="min-width: 250px;">
+        <button type="submit" class="btn-custom">Search</button>
+        <a href="{% url 'walis' %}" class="btn-custom btn-secondary">Clear</a>
+    </form>
+
+    <!-- Table -->
+    <div class="table-responsive">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Wali Name</th>
+                    <th>Associated Seeker</th>
+                    <th>Relationship</th>
+                    <th>Contact Number</th>
+                    <th>Chaperone Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for w in walis %}
+                <tr>
+                    <td>
+                        <div class="user-info-cell">
+                            <div class="user-avatar-sm" style="background: rgba(251, 191, 36, 0.08); color: var(--secondary);">W</div>
+                            <div style="font-weight: 600;">{{ w.name }}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 500;">{{ w.seeker.full_name }}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">{{ w.seeker.state }}</div>
+                    </td>
+                    <td>{{ w.relationship }}</td>
+                    <td><code>{{ w.contact_number }}</code></td>
+                    <td>
+                        {% if w.is_active %}
+                        <span class="status-badge status-verified">● Active</span>
+                        {% else %}
+                        <span class="status-badge status-unverified">● Inactive</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 32px 0;">
+                        No Walis found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

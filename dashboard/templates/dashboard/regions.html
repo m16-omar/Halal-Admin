@@ -1,0 +1,71 @@
+{% extends 'dashboard/base.html' %}
+
+{% block page_title %}Mosques & Regions Breakdown{% endblock %}
+
+{% block content %}
+<div class="grid-charts" style="grid-template-columns: 1fr 2fr;">
+    <!-- State Breakdown stats card -->
+    <div class="glass-card">
+        <h3 class="card-title" style="margin-bottom: 20px;">Active Users by Region</h3>
+        <div class="table-responsive">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>State / Area</th>
+                        <th style="text-align: right;">Total Users</th>
+                        <th style="text-align: right;">Mosques</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in state_stats %}
+                    <tr>
+                        <td><strong>{{ stat.state }}</strong></td>
+                        <td style="text-align: right; font-weight: 600;">{{ stat.total_users }}</td>
+                        <td style="text-align: right; color: var(--text-muted);">{{ stat.mosque_count }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" style="text-align: center; color: var(--text-muted);">No regional stats available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Mosques Detailed List -->
+    <div class="glass-card">
+        <h3 class="card-title" style="margin-bottom: 20px;">Registered Mosques</h3>
+        <div class="table-responsive">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Mosque Name</th>
+                        <th>Location (State)</th>
+                        <th>Chief Imam</th>
+                        <th style="text-align: right;">Active Users</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mq in mosques %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600;">{{ mq.name }}</div>
+                        </td>
+                        <td>{{ mq.state }}</td>
+                        <td>{{ mq.chief_imam }}</td>
+                        <td style="text-align: right; font-weight: 600; color: var(--primary);">
+                            {{ mq.active_users }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: var(--text-muted);">No mosques registered yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

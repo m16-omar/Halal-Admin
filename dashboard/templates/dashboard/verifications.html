@@ -1,0 +1,107 @@
+{% extends 'dashboard/base.html' %}
+
+{% block page_title %}Identity Verifications Queue{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <div class="card-header-bar">
+        <h2 class="card-title">Identity Verification Queue</h2>
+        <span style="font-size: 0.9rem; color: var(--text-muted);">{{ pending_count }} requests pending review</span>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>User Profile Name</th>
+                    <th>Document Type</th>
+                    <th>Submitted Date</th>
+                    <th>Verification Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr>
+                    <td>
+                        <div style="font-weight: 600;">{{ req.user_name }}</div>
+                    </td>
+                    <td>{{ req.document_type }}</td>
+                    <td>{{ req.created_at|date:"M d, Y" }}</td>
+                    <td>
+                        <span class="status-badge status-{{ req.status }}">{{ req.status }}</span>
+                    </td>
+                    <td>
+                        <div class="action-buttons-cell">
+                            {% if req.status == 'pending' %}
+                            <button class="btn-custom btn-review-id" 
+                                    data-id="{{ req.id }}" 
+                                    data-user="{{ req.user_name }}" 
+                                    data-doc="{{ req.document_type }}"
+                                    data-url="{{ req.document_preview_url }}"
+                                    style="padding: 6px 12px; font-size: 0.8rem;">
+                                Review ID
+                            </button>
+                            {% else %}
+                            <span style="font-size: 0.85rem; color: var(--text-muted);">Audited</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 32px 0;">
+                        No verification requests found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Glassmorphism ID Review Modal -->
+<div id="idModal" class="modal-overlay">
+    <div class="modal-content-box">
+        <button class="modal-close-btn">&times;</button>
+        <h3 class="modal-title">Verification Review</h3>
+        
+        <div class="modal-body">
+            <div style="margin-bottom: 12px;">
+                <strong>User Name:</strong> <span id="modalUserName">...</span>
+            </div>
+            <div style="margin-bottom: 16px;">
+                <strong>Document Type:</strong> <span id="modalDocType">...</span>
+            </div>
+            
+            <div style="background: rgba(0,0,0,0.2); border-radius: 10px; padding: 12px; text-align: center; margin-bottom: 16px;">
+                <!-- Fallback container in case image fails to load -->
+                <div style="padding: 30px 10px; color: var(--text-muted); font-size: 0.85rem; border: 1px dashed var(--border-color); border-radius: 8px;">
+                    <div style="font-size: 1.5rem; margin-bottom: 6px;">📄</div>
+                    <div>Identity Document Preview</div>
+                    <div style="font-size: 0.75rem; color: var(--primary); margin-top: 4px;">Mock Verification Image Loaded</div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="display: flex; justify-content: flex-end; gap: 12px;">
+            <!-- Reject Form -->
+            <form id="modalRejectForm" method="POST" action="{% url 'verifications' %}" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="request_id" value="">
+                <input type="hidden" name="action" value="reject">
+                <button type="submit" class="btn-custom btn-danger">Reject Document</button>
+            </form>
+            
+            <!-- Approve Form -->
+            <form id="modalApproveForm" method="POST" action="{% url 'verifications' %}" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="request_id" value="">
+                <input type="hidden" name="action" value="approve">
+                <button type="submit" class="btn-custom">Approve Profile</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

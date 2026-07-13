@@ -1,0 +1,257 @@
+{% extends 'dashboard/base.html' %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Content Header greeting -->
+<div class="page-header-container">
+    <div class="page-title-text">
+        <h1>As-salamu alaykum, Fatima</h1>
+        <p>Here's the pulse of the Nupe Halal Connect community today.</p>
+    </div>
+    <div class="page-header-actions">
+        <button class="btn-custom btn-secondary">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            Export
+        </button>
+        <button class="btn-custom">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+            </svg>
+            AI Digest
+        </button>
+    </div>
+</div>
+
+<!-- Metric Cards -->
+<div class="grid-stats">
+    <!-- Total Users -->
+    <div class="glass-card">
+        <div class="stat-card-body">
+            <div class="stat-card-trend-badge trend-up">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                </svg>
+                12.4%
+            </div>
+            <div class="stat-icon-wrapper">👥</div>
+            <span class="stat-card-title">Total Users</span>
+            <span class="stat-card-value">{{ total_users }}</span>
+        </div>
+    </div>
+    
+    <!-- Active Matches -->
+    <div class="glass-card">
+        <div class="stat-card-body">
+            <div class="stat-card-trend-badge trend-up">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                </svg>
+                8.1%
+            </div>
+            <div class="stat-icon-wrapper">💖</div>
+            <span class="stat-card-title">Active Matches</span>
+            <span class="stat-card-value">{{ active_matches }}</span>
+        </div>
+    </div>
+
+    <!-- Verified Profiles -->
+    <div class="glass-card">
+        <div class="stat-card-body">
+            <div class="stat-card-trend-badge trend-up">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                </svg>
+                6.7%
+            </div>
+            <div class="stat-icon-wrapper">🛡️</div>
+            <span class="stat-card-title">Verified Profiles</span>
+            <span class="stat-card-value">{{ verified_profiles }}</span>
+        </div>
+    </div>
+
+    <!-- Pending Moderation -->
+    <div class="glass-card">
+        <div class="stat-card-body">
+            <div class="stat-card-trend-badge trend-down">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                </svg>
+                3.2%
+            </div>
+            <div class="stat-icon-wrapper">🚩</div>
+            <span class="stat-card-title">Pending Moderation</span>
+            <span class="stat-card-value">{{ pending_moderation }}</span>
+        </div>
+    </div>
+
+    <!-- Monthly Revenue -->
+    <div class="glass-card">
+        <div class="stat-card-body">
+            <div class="stat-card-trend-badge trend-up">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                </svg>
+                18.6%
+            </div>
+            <div class="stat-icon-wrapper">💵</div>
+            <span class="stat-card-title">Monthly Revenue</span>
+            <span class="stat-card-value">${{ monthly_revenue }}</span>
+        </div>
+    </div>
+
+    <!-- Nikahs Completed -->
+    <div class="glass-card">
+        <div class="stat-card-body">
+            <div class="stat-card-trend-badge trend-up">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                </svg>
+                25.0%
+            </div>
+            <div class="stat-icon-wrapper">✨</div>
+            <span class="stat-card-title">Nikahs Completed</span>
+            <span class="stat-card-value">{{ nikahs_completed }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 1 -->
+<div class="grid-charts">
+    <div class="glass-card">
+        <div class="card-header-bar">
+            <h3 class="card-title">Community Growth</h3>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">last 12 months (+42% YoY)</span>
+        </div>
+        <div class="chart-container-box">
+            <canvas id="growthChart"></canvas>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <div class="card-header-bar">
+            <h3 class="card-title">Regional Reach</h3>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Active users by state</span>
+        </div>
+        <div class="chart-container-box">
+            <canvas id="reachChart" 
+                    data-niger="{{ states_data.Niger }}"
+                    data-kwara="{{ states_data.Kwara }}"
+                    data-fct="{{ states_data.FCT }}"
+                    data-kogi="{{ states_data.Kogi }}"
+                    data-diaspora="{{ states_data.Diaspora }}"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 2 -->
+<div class="grid-charts">
+    <div class="glass-card">
+        <div class="card-header-bar">
+            <h3 class="card-title">Ta'aruf Funnel</h3>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Registration → Nikah pipeline</span>
+        </div>
+        <div class="chart-container-box">
+            <canvas id="funnelChart"></canvas>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <div class="card-header-bar">
+            <h3 class="card-title">Revenue Streams</h3>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">USD overview</span>
+        </div>
+        <div class="chart-container-box">
+            <canvas id="revenueOverviewChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Lists Row -->
+<div class="grid-tables">
+    <!-- Recent Matches -->
+    <div class="glass-card">
+        <div class="card-header-bar">
+            <h3 class="card-title">Recent Matches</h3>
+            <a href="{% url 'matches' %}" class="btn-link">View all</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Couple</th>
+                        <th>Imam</th>
+                        <th>Wali Status</th>
+                        <th>Stage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in recent_matches %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600;">{{ m.seeker_male.full_name }} ↔ {{ m.seeker_female.full_name }}</div>
+                        </td>
+                        <td>{{ m.imam.name|default:"Unassigned" }}</td>
+                        <td>
+                            {% if m.seeker_female.walis.all %}
+                                <span style="color: var(--success);">● Active</span>
+                            {% else %}
+                                <span style="color: var(--danger);">● None</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="status-badge status-{{ m.status|slugify }}">{{ m.status }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: var(--text-muted);">No recent matches.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Moderation Queue -->
+    <div class="glass-card">
+        <div class="card-header-bar">
+            <h3 class="card-title">Moderation Queue</h3>
+            <a href="{% url 'reports' %}" class="btn-link">Review</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Offender</th>
+                        <th>Issue</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in moderation_queue %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600;">{{ r.reported_user }}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">by {{ r.reporter }}</div>
+                        </td>
+                        <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            {{ r.reason }}
+                        </td>
+                        <td>
+                            <a href="{% url 'reports' %}?status=open" class="btn-link" style="color: var(--secondary);">Review</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" style="text-align: center; color: var(--text-muted);">Queue is clean! Alhamdulillah.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

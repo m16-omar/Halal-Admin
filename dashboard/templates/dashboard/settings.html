@@ -1,0 +1,84 @@
+{% extends 'dashboard/base.html' %}
+
+{% block page_title %}System Settings{% endblock %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 800px; margin: 0 auto;">
+    <h2 class="card-title" style="margin-bottom: 24px;">Platform Configurations</h2>
+
+    <form method="POST" action="{% url 'settings' %}" style="display: flex; flex-direction: column; gap: 24px;">
+        {% csrf_token %}
+
+        <!-- Group 1: Matchmaking Settings -->
+        <div>
+            <h3 style="font-family: var(--font-outfit); font-size: 1.05rem; color: var(--primary); margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">
+                Ta'aruf Rules & Verification
+            </h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 0.85rem; color: var(--text-muted);">Require Wali Approval for Chat</label>
+                    <select class="select-custom" style="width: 100%;">
+                        <option value="yes">Yes (Strictly Enforced)</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 0.85rem; color: var(--text-muted);">ID Verification Mode</label>
+                    <select class="select-custom" style="width: 100%;">
+                        <option value="manual">Manual Review (Recommended)</option>
+                        <option value="auto">Auto-AI Verification</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Group 2: AI Moderation sensitivity -->
+        <div>
+            <h3 style="font-family: var(--font-outfit); font-size: 1.05rem; color: var(--primary); margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">
+                AI Flagging Filters
+            </h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 0.85rem; color: var(--text-muted);">Off-Platform Exchange Sensitivity</label>
+                    <select class="select-custom" style="width: 100%;">
+                        <option value="high">High (Flags phone numbers, emails, IG/SC handles)</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 0.85rem; color: var(--text-muted);">Inappropriate Language Filter</label>
+                    <select class="select-custom" style="width: 100%;">
+                        <option value="block">Block immediately & notify</option>
+                        <option value="flag">Flag & send to review queue</option>
+                        <option value="ignore">Ignore</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Group 3: Financial Pricing model -->
+        <div>
+            <h3 style="font-family: var(--font-outfit); font-size: 1.05rem; color: var(--primary); margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">
+                Pricing & Monetisation (USD)
+            </h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 0.85rem; color: var(--text-muted);">Monthly Premium Subscription Price</label>
+                    <input type="number" step="0.01" class="input-custom" value="20.00" style="width: 100%;">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 0.85rem; color: var(--text-muted);">Ta'aruf Match Solicitation Fee</label>
+                    <input type="number" step="0.01" class="input-custom" value="15.00" style="width: 100%;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+            <button type="button" class="btn-custom btn-secondary">Restore Defaults</button>
+            <button type="submit" class="btn-custom">Save Configurations</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

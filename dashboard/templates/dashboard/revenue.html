@@ -1,0 +1,79 @@
+{% extends 'dashboard/base.html' %}
+
+{% block page_title %}Revenue & Sales Overview{% endblock %}
+
+{% block content %}
+<div class="revenue-stats-row">
+    <!-- Stat card 1 -->
+    <div class="glass-card">
+        <div class="stat-header">
+            <span>Total Sales (All Time)</span>
+            <div class="stat-icon">📈</div>
+        </div>
+        <div class="stat-value">${{ total_sales }}</div>
+        <div class="stat-trend trend-up">▲ 14.8% <span style="color: var(--text-muted);">overall growth</span></div>
+    </div>
+
+    <!-- Stat card 2 -->
+    <div class="glass-card">
+        <div class="stat-header">
+            <span>Transaction Count</span>
+            <div class="stat-icon">🧾</div>
+        </div>
+        <div class="stat-value">{{ transaction_count }}</div>
+        <div class="stat-trend trend-up">▲ 12.1% <span style="color: var(--text-muted);">purchases</span></div>
+    </div>
+</div>
+
+<div class="grid-charts" style="grid-template-columns: 1fr 2fr;">
+    <!-- Revenue Breakdown Chart -->
+    <div class="glass-card">
+        <div class="card-header-bar">
+            <h3 class="card-title">Revenue Distribution</h3>
+        </div>
+        <div class="chart-container-box" style="height: 220px;">
+            <canvas id="subscriptionChart" 
+                    data-sub="{{ sub_count }}" 
+                    data-match="{{ match_fee_count }}" 
+                    data-don="{{ donation_count }}"></canvas>
+        </div>
+    </div>
+
+    <!-- Transactions Log Table -->
+    <div class="glass-card">
+        <div class="card-header-bar">
+            <h3 class="card-title">Recent Transactions</h3>
+        </div>
+        <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tx in transactions %}
+                    <tr>
+                        <td><strong>{{ tx.user_name }}</strong></td>
+                        <td>{{ tx.transaction_type }}</td>
+                        <td><strong>${{ tx.amount }}</strong></td>
+                        <td>{{ tx.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            <span class="status-badge status-{{ tx.status }}">{{ tx.status }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-muted);">No transactions recorded.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends 'dashboard/base.html' %}
+
+{% block page_title %}Moderation Reports Queue{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <div class="card-header-bar">
+        <h2 class="card-title">Moderation & Flags</h2>
+        <span style="font-size: 0.9rem; color: var(--text-muted);">{{ reports.count }} active reports</span>
+    </div>
+
+    <!-- Filters -->
+    <div class="search-filter-bar">
+        <a href="{% url 'reports' %}" class="btn-custom {% if not status_filter %}btn-primary{% else %}btn-secondary{% endif %}" style="padding: 8px 16px; font-size: 0.85rem;">
+            All Reports
+        </a>
+        <a href="{% url 'reports' %}?status=open" class="btn-custom {% if status_filter == 'open' %}btn-primary{% else %}btn-secondary{% endif %}" style="padding: 8px 16px; font-size: 0.85rem;">
+            Open
+        </a>
+        <a href="{% url 'reports' %}?status=reviewing" class="btn-custom {% if status_filter == 'reviewing' %}btn-primary{% else %}btn-secondary{% endif %}" style="padding: 8px 16px; font-size: 0.85rem;">
+            Reviewing
+        </a>
+        <a href="{% url 'reports' %}?status=resolved" class="btn-custom {% if status_filter == 'resolved' %}btn-primary{% else %}btn-secondary{% endif %}" style="padding: 8px 16px; font-size: 0.85rem;">
+            Resolved
+        </a>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Reported User</th>
+                    <th>Reporter</th>
+                    <th>Reason / Details</th>
+                    <th>Created Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in reports %}
+                <tr>
+                    <td>
+                        <div style="font-weight: 600;">{{ r.reported_user }}</div>
+                    </td>
+                    <td>{{ r.reporter }}</td>
+                    <td style="max-width: 300px; word-wrap: break-word; font-size: 0.85rem;">
+                        {{ r.reason }}
+                    </td>
+                    <td>{{ r.created_at|date:"M d, H:i A" }}</td>
+                    <td>
+                        <span class="status-badge status-{{ r.status }}">{{ r.status }}</span>
+                    </td>
+                    <td>
+                        <div class="action-buttons-cell">
+                            {% if r.status == 'open' %}
+                            <form method="POST" action="{% url 'reports' %}" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="report_id" value="{{ r.id }}">
+                                <input type="hidden" name="action" value="review">
+                                <button type="submit" class="btn-custom btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">Review</button>
+                            </form>
+                            {% endif %}
+                            
+                            {% if r.status != 'resolved' %}
+                            <form method="POST" action="{% url 'reports' %}" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="report_id" value="{{ r.id }}">
+                                <input type="hidden" name="action" value="resolve">
+                                <button type="submit" class="btn-custom" style="padding: 6px 12px; font-size: 0.8rem;">Resolve</button>
+                            </form>
+                            {% endif %}
+
+                            <form method="POST" action="{% url 'reports' %}" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="report_id" value="{{ r.id }}">
+                                <input type="hidden" name="action" value="dismiss">
+                                <button type="submit" class="btn-custom btn-danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="return confirm('Dismiss this report?');">Dismiss</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px 0;">
+                        No reports in the queue.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

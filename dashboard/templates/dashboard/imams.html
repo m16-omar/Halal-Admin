@@ -1,0 +1,73 @@
+{% extends 'dashboard/base.html' %}
+
+{% block page_title %}Imams Management{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <div class="card-header-bar">
+        <h2 class="card-title">Supervising Imams</h2>
+        <span style="font-size: 0.9rem; color: var(--text-muted);">{{ imams.count }} registered imams</span>
+    </div>
+
+    <!-- Search bar -->
+    <form method="GET" action="{% url 'imams' %}" class="search-filter-bar">
+        <input type="text" name="search" placeholder="Search by name or mosque..." value="{{ search_query }}" class="input-custom" style="min-width: 250px;">
+        <button type="submit" class="btn-custom">Search</button>
+        <a href="{% url 'imams' %}" class="btn-custom btn-secondary">Clear</a>
+    </form>
+
+    <!-- Table -->
+    <div class="table-responsive">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Imam Name</th>
+                    <th>Mosque</th>
+                    <th>State</th>
+                    <th>Matches Supervised</th>
+                    <th>Verification</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for im in imams %}
+                <tr>
+                    <td>
+                        <div class="user-info-cell">
+                            <div class="user-avatar-sm" style="background: rgba(59, 130, 246, 0.08); color: var(--info);">I</div>
+                            <div style="font-weight: 600;">{{ im.name }}</div>
+                        </div>
+                    </td>
+                    <td>{{ im.mosque }}</td>
+                    <td>{{ im.state }}</td>
+                    <td style="font-weight: 600; text-align: center;">{{ im.matches_supervised }}</td>
+                    <td>
+                        {% if im.is_verified %}
+                        <span class="status-badge status-verified">✓ Verified</span>
+                        {% else %}
+                        <span class="status-badge status-unverified">✗ Unverified</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form method="POST" action="{% url 'imams' %}" style="display:inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="imam_id" value="{{ im.id }}">
+                            <input type="hidden" name="action" value="toggle_verify">
+                            <button type="submit" class="btn-custom btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">
+                                {% if im.is_verified %}Revoke{% else %}Approve{% endif %}
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px 0;">
+                        No Imams found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

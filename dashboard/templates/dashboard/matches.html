@@ -1,0 +1,80 @@
+{% extends 'dashboard/base.html' %}
+
+{% block page_title %}Matches Pipeline{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <div class="card-header-bar">
+        <h2 class="card-title">Ta'aruf Matches</h2>
+        <span style="font-size: 0.9rem; color: var(--text-muted);">{{ matches.count }} matches recorded</span>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="search-filter-bar">
+        <a href="{% url 'matches' %}" class="btn-custom {% if not status_filter %}btn-primary{% else %}btn-secondary{% endif %}" style="padding: 8px 16px; font-size: 0.85rem;">
+            All Stages
+        </a>
+        <a href="{% url 'matches' %}?status=active chat" class="btn-custom {% if status_filter == 'active chat' %}btn-primary{% else %}btn-secondary{% endif %}" style="padding: 8px 16px; font-size: 0.85rem;">
+            Active Chat
+        </a>
+        <a href="{% url 'matches' %}?status=meeting planned" class="btn-custom {% if status_filter == 'meeting planned' %}btn-primary{% else %}btn-secondary{% endif %}" style="padding: 8px 16px; font-size: 0.85rem;">
+            Meeting Planned
+        </a>
+        <a href="{% url 'matches' %}?status=nikah" class="btn-custom {% if status_filter == 'nikah' %}btn-primary{% else %}btn-secondary{% endif %}" style="padding: 8px 16px; font-size: 0.85rem;">
+            Nikah
+        </a>
+        <a href="{% url 'matches' %}?status=closed" class="btn-custom {% if status_filter == 'closed' %}btn-primary{% else %}btn-secondary{% endif %}" style="padding: 8px 16px; font-size: 0.85rem;">
+            Closed
+        </a>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Couple</th>
+                    <th>Imam</th>
+                    <th>Wali Presence</th>
+                    <th>Created Date</th>
+                    <th>Stage</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in matches %}
+                <tr>
+                    <td>
+                        <div style="font-weight: 600;">{{ m.seeker_male.full_name }} ↔ {{ m.seeker_female.full_name }}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">{{ m.seeker_male.state }} / {{ m.seeker_female.state }}</div>
+                    </td>
+                    <td>{{ m.imam.name|default:"Unassigned" }}</td>
+                    <td>
+                        {% if m.seeker_female.walis.all %}
+                            <span style="color: var(--primary);">✓ Linked: {{ m.seeker_female.walis.first.name }}</span>
+                        {% else %}
+                            <span style="color: var(--danger);">✗ Missing</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ m.created_at|date:"M d, Y" }}</td>
+                    <td>
+                        <span class="status-badge status-{{ m.status|slugify }}">{{ m.status }}</span>
+                    </td>
+                    <td>
+                        <a href="{% url 'chats' %}?match_id={{ m.id }}" class="btn-custom btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">
+                            Audit Chat
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px 0;">
+                        No matches found for this stage.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
