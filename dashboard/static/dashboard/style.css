@@ -1410,3 +1410,113 @@ body {
     background: linear-gradient(135deg, #3b82f6, #1d4ed8);
 }
 
+/* ═══════════════════════════════════════════════════════
+   MATCHES PAGE
+═══════════════════════════════════════════════════════ */
+
+/* 5-column metric grid */
+.match-metric-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+/* Stat inner row (label + colour dot) */
+.match-stat-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.match-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.match-dot-active  { background: #2563eb; }
+.match-dot-meeting { background: #d97706; }
+.match-dot-nikah   { background: #16a34a; }
+.match-dot-closed  { background: #9ca3af; }
+
+/* Couple cell */
+.match-couple-cell {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Match avatars */
+.match-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.82rem;
+    font-family: var(--font-outfit);
+    color: #fff;
+    flex-shrink: 0;
+    border: 2px solid var(--bg-card);
+}
+.match-avatar-male   { background: var(--primary); }
+.match-avatar-female { background: #9333ea; }
+
+.match-hearts {
+    margin: 0 -4px;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+}
+
+/* Stage pill badges */
+.match-stage {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.match-stage-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.match-stage-active  { background: rgba(37, 99, 235, 0.10); color: #2563eb; }
+.match-stage-active .match-stage-dot  { background: #2563eb; }
+
+.match-stage-meeting { background: rgba(217, 119, 6, 0.10);  color: #d97706; }
+.match-stage-meeting .match-stage-dot { background: #d97706; }
+
+.match-stage-nikah   { background: rgba(22, 163, 74, 0.10);  color: #16a34a; }
+.match-stage-nikah .match-stage-dot   { background: #16a34a; }
+
+.match-stage-closed  { background: var(--bg-tertiary); color: var(--text-muted); }
+.match-stage-closed .match-stage-dot  { background: #9ca3af; }
+
+/* Progress bar */
+.match-progress-wrap {
+    width: 100%;
+    height: 5px;
+    background: var(--bg-tertiary);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 3px;
+}
+
+.match-progress-bar {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.4s ease;
+}
+
+

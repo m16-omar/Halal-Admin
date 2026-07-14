@@ -3,72 +3,250 @@
 {% block page_title %}Matches Pipeline{% endblock %}
 
 {% block content %}
-<div class="glass-card">
-    <div class="card-header-bar">
-        <h2 class="card-title">Ta'aruf Matches</h2>
-        <span style="font-size: 0.9rem; color: var(--text-muted);">{{ matches.count }} matches recorded</span>
+
+<!-- ── Page Header ──────────────────────────────────── -->
+<div style="margin-bottom: 24px;">
+    <h1 style="font-family: var(--font-outfit); font-size: 1.75rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
+        Ta'aruf Matches
+    </h1>
+    <p style="font-size: 0.88rem; color: var(--text-muted); max-width: 600px;">
+        Monitor and manage all halal matchmaking conversations. Track progress from initial introduction through to Nikah.
+    </p>
+</div>
+
+<!-- ── Metric Summary Cards ─────────────────────────── -->
+<div class="match-metric-row">
+
+    <div class="wali-stat-card">
+        <span class="wali-stat-label">Total Matches</span>
+        <span class="wali-stat-value">{{ total_matches }}</span>
     </div>
 
-    <!-- Filter bar -->
-    <div class="search-filter-bar">
-        <a href="{% url 'matches' %}" class="btn-custom {% if not status_filter %}btn-primary{% else %}btn-secondary{% endif %}" style="padding: 8px 16px; font-size: 0.85rem;">
-            All Stages
-        </a>
-        <a href="{% url 'matches' %}?status=active chat" class="btn-custom {% if status_filter == 'active chat' %}btn-primary{% else %}btn-secondary{% endif %}" style="padding: 8px 16px; font-size: 0.85rem;">
-            Active Chat
-        </a>
-        <a href="{% url 'matches' %}?status=meeting planned" class="btn-custom {% if status_filter == 'meeting planned' %}btn-primary{% else %}btn-secondary{% endif %}" style="padding: 8px 16px; font-size: 0.85rem;">
-            Meeting Planned
-        </a>
-        <a href="{% url 'matches' %}?status=nikah" class="btn-custom {% if status_filter == 'nikah' %}btn-primary{% else %}btn-secondary{% endif %}" style="padding: 8px 16px; font-size: 0.85rem;">
-            Nikah
-        </a>
-        <a href="{% url 'matches' %}?status=closed" class="btn-custom {% if status_filter == 'closed' %}btn-primary{% else %}btn-secondary{% endif %}" style="padding: 8px 16px; font-size: 0.85rem;">
-            Closed
-        </a>
+    <div class="wali-stat-card">
+        <div class="match-stat-inner">
+            <span class="wali-stat-label">Active Chats</span>
+            <span class="match-dot match-dot-active"></span>
+        </div>
+        <span class="wali-stat-value" style="color: #2563eb;">{{ active_count }}</span>
     </div>
 
-    <!-- Table -->
-    <div class="table-responsive">
-        <table class="table-custom">
+    <div class="wali-stat-card">
+        <div class="match-stat-inner">
+            <span class="wali-stat-label">Meeting Planned</span>
+            <span class="match-dot match-dot-meeting"></span>
+        </div>
+        <span class="wali-stat-value" style="color: #d97706;">{{ meeting_count }}</span>
+    </div>
+
+    <div class="wali-stat-card">
+        <div class="match-stat-inner">
+            <span class="wali-stat-label">Nikah</span>
+            <span class="match-dot match-dot-nikah"></span>
+        </div>
+        <span class="wali-stat-value" style="color: var(--primary);">{{ nikah_count }}</span>
+    </div>
+
+    <div class="wali-stat-card">
+        <div class="match-stat-inner">
+            <span class="wali-stat-label">Closed</span>
+            <span class="match-dot match-dot-closed"></span>
+        </div>
+        <span class="wali-stat-value" style="color: var(--text-muted);">{{ closed_count }}</span>
+    </div>
+
+</div>
+
+<!-- ── Main Table Card ──────────────────────────────── -->
+<div class="glass-card" style="overflow: visible;">
+
+    <!-- Topbar: stage tabs + search -->
+    <div class="seekers-topbar">
+        <div class="seeker-tabs">
+            <a href="?status={% if search_query %}&search={{ search_query }}{% endif %}"
+               class="seeker-tab {% if not status_filter %}active{% endif %}">
+                All <span class="tab-count">{{ total_matches }}</span>
+            </a>
+            <a href="?status=active+chat{% if search_query %}&search={{ search_query }}{% endif %}"
+               class="seeker-tab {% if status_filter == 'active chat' %}active{% endif %}">
+                Active Chat <span class="tab-count">{{ active_count }}</span>
+            </a>
+            <a href="?status=meeting+planned{% if search_query %}&search={{ search_query }}{% endif %}"
+               class="seeker-tab {% if status_filter == 'meeting planned' %}active{% endif %}">
+                Meeting Planned <span class="tab-count tab-count-amber">{{ meeting_count }}</span>
+            </a>
+            <a href="?status=nikah{% if search_query %}&search={{ search_query }}{% endif %}"
+               class="seeker-tab {% if status_filter == 'nikah' %}active{% endif %}">
+                Nikah <span class="tab-count">{{ nikah_count }}</span>
+            </a>
+            <a href="?status=closed{% if search_query %}&search={{ search_query }}{% endif %}"
+               class="seeker-tab {% if status_filter == 'closed' %}active{% endif %}">
+                Closed <span class="tab-count">{{ closed_count }}</span>
+            </a>
+        </div>
+
+        <div class="seeker-search-row">
+            <form method="GET" action="" class="seeker-search-form" id="matchSearchForm">
+                <input type="hidden" name="status" value="{{ status_filter }}">
+                <div class="seeker-search-wrap">
+                    <svg class="seeker-search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" name="search" value="{{ search_query }}" placeholder="Search couple or imam..." class="seeker-search-input" autocomplete="off">
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ── Table ──────────────────────────────────────── -->
+    <div class="table-responsive" style="overflow: visible;">
+        <table class="seeker-table">
             <thead>
                 <tr>
                     <th>Couple</th>
-                    <th>Imam</th>
-                    <th>Wali Presence</th>
-                    <th>Created Date</th>
                     <th>Stage</th>
-                    <th>Action</th>
+                    <th>Imam</th>
+                    <th>Wali</th>
+                    <th>Started</th>
+                    <th>Progress</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
                 {% for m in matches %}
-                <tr>
+                <tr class="seeker-row">
+
+                    <!-- Couple cell -->
                     <td>
-                        <div style="font-weight: 600;">{{ m.seeker_male.full_name }} ↔ {{ m.seeker_female.full_name }}</div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">{{ m.seeker_male.state }} / {{ m.seeker_female.state }}</div>
+                        <div class="match-couple-cell">
+                            <!-- Groom avatar -->
+                            <div class="match-avatar match-avatar-male">{{ m.seeker_male.full_name|slice:":1"|upper }}</div>
+                            <div class="match-hearts">
+                                <svg width="14" height="14" fill="#16a34a" viewBox="0 0 24 24">
+                                    <path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/>
+                                </svg>
+                            </div>
+                            <!-- Bride avatar -->
+                            <div class="match-avatar match-avatar-female">{{ m.seeker_female.full_name|slice:":1"|upper }}</div>
+                            <div class="seeker-info" style="margin-left: 4px;">
+                                <span class="seeker-name" style="font-size: 0.88rem;">
+                                    {{ m.seeker_male.full_name }} &amp; {{ m.seeker_female.full_name }}
+                                </span>
+                                <span class="seeker-meta">{{ m.seeker_male.state }} · {{ m.seeker_female.state }}</span>
+                            </div>
+                        </div>
                     </td>
-                    <td>{{ m.imam.name|default:"Unassigned" }}</td>
+
+                    <!-- Stage badge -->
                     <td>
-                        {% if m.seeker_female.walis.all %}
-                            <span style="color: var(--primary);">✓ Linked: {{ m.seeker_female.walis.first.name }}</span>
+                        {% if m.status == 'active chat' %}
+                        <span class="match-stage match-stage-active">
+                            <span class="match-stage-dot"></span>Active Chat
+                        </span>
+                        {% elif m.status == 'meeting planned' %}
+                        <span class="match-stage match-stage-meeting">
+                            <span class="match-stage-dot"></span>Meeting Planned
+                        </span>
+                        {% elif m.status == 'nikah' %}
+                        <span class="match-stage match-stage-nikah">
+                            <span class="match-stage-dot"></span>Nikah
+                        </span>
                         {% else %}
-                            <span style="color: var(--danger);">✗ Missing</span>
+                        <span class="match-stage match-stage-closed">
+                            <span class="match-stage-dot"></span>Closed
+                        </span>
                         {% endif %}
                     </td>
-                    <td>{{ m.created_at|date:"M d, Y" }}</td>
+
+                    <!-- Imam -->
                     <td>
-                        <span class="status-badge status-{{ m.status|slugify }}">{{ m.status }}</span>
+                        {% if m.imam %}
+                        <div class="seeker-cell">
+                            <div class="imam-avatar" style="width: 28px; height: 28px; font-size: 0.75rem;">{{ m.imam.name|slice:":1"|upper }}</div>
+                            <span style="font-size: 0.85rem; color: var(--text-secondary);">{{ m.imam.name }}</span>
+                        </div>
+                        {% else %}
+                        <span style="color: var(--text-muted); font-size: 0.83rem;">Unassigned</span>
+                        {% endif %}
                     </td>
+
+                    <!-- Wali status -->
                     <td>
-                        <a href="{% url 'chats' %}?match_id={{ m.id }}" class="btn-custom btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">
-                            Audit Chat
-                        </a>
+                        {% if m.seeker_female.walis.all %}
+                        <span class="wali-linked">
+                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            {{ m.seeker_female.walis.first.name|truncatechars:14 }}
+                        </span>
+                        {% else %}
+                        <span style="color: #dc2626; font-size: 0.82rem; font-weight: 500; display: flex; align-items: center; gap: 4px;">
+                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+                            Missing
+                        </span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Started date -->
+                    <td class="seeker-last-active">{{ m.created_at|date:"M j, Y" }}</td>
+
+                    <!-- Progress bar -->
+                    <td style="min-width: 110px;">
+                        {% if m.status == 'active chat' %}
+                        {% with pct=25 color="#2563eb" %}
+                        <div class="match-progress-wrap">
+                            <div class="match-progress-bar" style="width: {{ pct }}%; background: {{ color }};"></div>
+                        </div>
+                        <span style="font-size: 0.72rem; color: var(--text-muted);">{{ pct }}%</span>
+                        {% endwith %}
+                        {% elif m.status == 'meeting planned' %}
+                        <div class="match-progress-wrap">
+                            <div class="match-progress-bar" style="width: 55%; background: #d97706;"></div>
+                        </div>
+                        <span style="font-size: 0.72rem; color: var(--text-muted);">55%</span>
+                        {% elif m.status == 'nikah' %}
+                        <div class="match-progress-wrap">
+                            <div class="match-progress-bar" style="width: 100%; background: #16a34a;"></div>
+                        </div>
+                        <span style="font-size: 0.72rem; color: var(--text-muted);">100%</span>
+                        {% else %}
+                        <div class="match-progress-wrap">
+                            <div class="match-progress-bar" style="width: 0%; background: var(--border-color);"></div>
+                        </div>
+                        <span style="font-size: 0.72rem; color: var(--text-muted);">Closed</span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Actions -->
+                    <td class="seeker-actions-cell" style="width: auto; white-space: nowrap;">
+                        <div style="display: flex; align-items: center; gap: 8px; justify-content: flex-end;">
+                            <a href="{% url 'chats' %}?match_id={{ m.id }}" class="wali-review-btn">
+                                Audit Chat
+                            </a>
+                            <div class="seeker-menu-wrap">
+                                <button class="seeker-dots-btn" onclick="toggleMenu(event, 'mmenu-{{ m.id }}')" title="More actions">
+                                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                        <circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>
+                                    </svg>
+                                </button>
+                                <div class="seeker-dropdown" id="mmenu-{{ m.id }}">
+                                    <a href="{% url 'chats' %}?match_id={{ m.id }}" class="seeker-dropdown-item">
+                                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                                        View Chat
+                                    </a>
+                                    <a href="{% url 'seeker_detail' m.seeker_male.id %}" class="seeker-dropdown-item">
+                                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                        View Groom Profile
+                                    </a>
+                                    <a href="{% url 'seeker_detail' m.seeker_female.id %}" class="seeker-dropdown-item">
+                                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                        View Bride Profile
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px 0;">
+                    <td colspan="7" style="text-align:center; color:var(--text-muted); padding:48px 0;">
                         No matches found for this stage.
                     </td>
                 </tr>
@@ -77,4 +255,22 @@
         </table>
     </div>
 </div>
+
+<script>
+function toggleMenu(e, id) {
+    e.stopPropagation();
+    document.querySelectorAll('.seeker-dropdown.open').forEach(function(d) {
+        if (d.id !== id) d.classList.remove('open');
+    });
+    document.getElementById(id).classList.toggle('open');
+}
+document.addEventListener('click', function() {
+    document.querySelectorAll('.seeker-dropdown.open').forEach(function(d) {
+        d.classList.remove('open');
+    });
+});
+document.querySelector('.seeker-search-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') document.getElementById('matchSearchForm').submit();
+});
+</script>
 {% endblock %}

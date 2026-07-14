@@ -253,18 +253,40 @@ def imams_view(request):
 
 
 def matches_view(request):
+    search_query  = request.GET.get('search', '')
     status_filter = request.GET.get('status', '')
-    matches = Match.objects.all().order_by('-id')
-    
+
+    all_matches = Match.objects.all()
+
+    # Metric counts
+    total_matches    = all_matches.count()
+    active_count     = all_matches.filter(status='active chat').count()
+    meeting_count    = all_matches.filter(status='meeting planned').count()
+    nikah_count      = all_matches.filter(status='nikah').count()
+    closed_count     = all_matches.filter(status='closed').count()
+
+    # Filtered queryset
+    matches = all_matches.order_by('-id')
     if status_filter:
         matches = matches.filter(status=status_filter)
+    if search_query:
+        matches = matches.filter(seeker_male__full_name__icontains=search_query) | \
+                  matches.filter(seeker_female__full_name__icontains=search_query) | \
+                  matches.filter(imam__name__icontains=search_query)
 
     context = {
-        'matches': matches,
+        'matches':       matches,
+        'search_query':  search_query,
         'status_filter': status_filter,
-        'active_page': 'matches'
+        'total_matches': total_matches,
+        'active_count':  active_count,
+        'meeting_count': meeting_count,
+        'nikah_count':   nikah_count,
+        'closed_count':  closed_count,
+        'active_page':   'matches',
     }
     return render(request, 'dashboard/matches.html', context)
+
 
 def chat_oversight_view(request):
     match_id = request.GET.get('match_id', '')
