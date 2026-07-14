@@ -91,10 +91,11 @@ body {
 
 .rail-brand {
     width: 100%;
+    height: 70px;           /* exact match with topbar height */
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 14px 0;
     border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
