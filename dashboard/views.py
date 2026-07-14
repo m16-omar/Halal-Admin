@@ -199,25 +199,58 @@ def walis_view(request):
 def imams_view(request):
     if request.method == 'POST':
         imam_id = request.POST.get('imam_id')
-        action = request.POST.get('action')
+        action  = request.POST.get('action')
         imam = get_object_or_404(Imam, id=imam_id)
-        if action == 'toggle_verify':
+        if action == 'approve':
+            imam.is_verified = True
+            imam.save()
+            messages.success(request, f"Imam {imam.name} has been approved.")
+        elif action == 'revoke':
+            imam.is_verified = False
+            imam.save()
+            messages.warning(request, f"Imam {imam.name} verification has been revoked.")
+        elif action == 'toggle_verify':
             imam.is_verified = not imam.is_verified
             imam.save()
             messages.success(request, f"Imam {imam.name} verification status updated.")
         return redirect('imams')
 
     search_query = request.GET.get('search', '')
-    imams = Imam.objects.all().order_by('-id')
+    tab_filter   = request.GET.get('tab', 'all')  # all | verified | pending
+
+    all_imams = Imam.objects.all()
+
+    # Metric totals
+    total_imams    = all_imams.count()
+    verified_count = all_imams.filter(is_verified=True).count()
+    pending_count  = all_imams.filter(is_verified=False).count()
+    total_matches  = all_imams.aggregate(t=Sum('matches_supervised'))['t'] or 0
+
+    # Tab filter
+    imams = all_imams.order_by('-id')
+    if tab_filter == 'verified':
+        imams = imams.filter(is_verified=True)
+    elif tab_filter == 'pending':
+        imams = imams.filter(is_verified=False)
+
+    # Search
     if search_query:
-        imams = imams.filter(name__icontains=search_query) | imams.filter(mosque__icontains=search_query)
+        imams = imams.filter(name__icontains=search_query) | \
+                imams.filter(mosque__icontains=search_query) | \
+                imams.filter(state__icontains=search_query)
 
     context = {
-        'imams': imams,
-        'search_query': search_query,
-        'active_page': 'imams'
+        'imams':          imams,
+        'search_query':   search_query,
+        'tab_filter':     tab_filter,
+        'total_imams':    total_imams,
+        'verified_count': verified_count,
+        'pending_count':  pending_count,
+        'total_matches':  total_matches,
+        'active_page':    'imams',
     }
     return render(request, 'dashboard/imams.html', context)
+
 
 def matches_view(request):
     status_filter = request.GET.get('status', '')

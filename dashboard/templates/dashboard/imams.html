@@ -1,68 +1,211 @@
 {% extends 'dashboard/base.html' %}
 
-{% block page_title %}Imams Management{% endblock %}
+{% block page_title %}Imams — Supervising Scholars{% endblock %}
 
 {% block content %}
-<div class="glass-card">
-    <div class="card-header-bar">
-        <h2 class="card-title">Supervising Imams</h2>
-        <span style="font-size: 0.9rem; color: var(--text-muted);">{{ imams.count }} registered imams</span>
+
+<!-- ── Page Header ──────────────────────────────────── -->
+<div style="margin-bottom: 24px;">
+    <h1 style="font-family: var(--font-outfit); font-size: 1.75rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
+        Imams (Scholars)
+    </h1>
+    <p style="font-size: 0.88rem; color: var(--text-muted); max-width: 560px;">
+        Verified Islamic scholars supervising matches and facilitating conversations in accordance with Islamic principles.
+    </p>
+</div>
+
+<!-- ── Metric Summary Cards ─────────────────────────── -->
+<div class="wali-metric-row" style="margin-bottom: 24px;">
+
+    <div class="wali-stat-card">
+        <span class="wali-stat-label">Total Imams</span>
+        <span class="wali-stat-value">{{ total_imams }}</span>
     </div>
 
-    <!-- Search bar -->
-    <form method="GET" action="{% url 'imams' %}" class="search-filter-bar">
-        <input type="text" name="search" placeholder="Search by name or mosque..." value="{{ search_query }}" class="input-custom" style="min-width: 250px;">
-        <button type="submit" class="btn-custom">Search</button>
-        <a href="{% url 'imams' %}" class="btn-custom btn-secondary">Clear</a>
-    </form>
+    <div class="wali-stat-card">
+        <span class="wali-stat-label">Verified</span>
+        <span class="wali-stat-value" style="color: var(--primary);">{{ verified_count }}</span>
+    </div>
 
-    <!-- Table -->
-    <div class="table-responsive">
-        <table class="table-custom">
+    <div class="wali-stat-card">
+        <span class="wali-stat-label">Matches Supervised</span>
+        <span class="wali-stat-value" style="color: var(--primary);">{{ total_matches }}</span>
+    </div>
+
+</div>
+
+<!-- ── Main Table Card ──────────────────────────────── -->
+<div class="glass-card" style="overflow: visible;">
+
+    <!-- Topbar: tabs + search -->
+    <div class="seekers-topbar">
+        <div class="seeker-tabs">
+            <a href="?tab=all{% if search_query %}&search={{ search_query }}{% endif %}"
+               class="seeker-tab {% if tab_filter == 'all' %}active{% endif %}">
+                All <span class="tab-count">{{ total_imams }}</span>
+            </a>
+            <a href="?tab=verified{% if search_query %}&search={{ search_query }}{% endif %}"
+               class="seeker-tab {% if tab_filter == 'verified' %}active{% endif %}">
+                Verified <span class="tab-count">{{ verified_count }}</span>
+            </a>
+            <a href="?tab=pending{% if search_query %}&search={{ search_query }}{% endif %}"
+               class="seeker-tab {% if tab_filter == 'pending' %}active{% endif %}">
+                Pending <span class="tab-count tab-count-amber">{{ pending_count }}</span>
+            </a>
+        </div>
+
+        <div class="seeker-search-row">
+            <form method="GET" action="" class="seeker-search-form" id="imamSearchForm">
+                <input type="hidden" name="tab" value="{{ tab_filter }}">
+                <div class="seeker-search-wrap">
+                    <svg class="seeker-search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" name="search" value="{{ search_query }}" placeholder="Search name, mosque or state..." class="seeker-search-input" autocomplete="off">
+                </div>
+            </form>
+            <button class="seeker-filter-btn" title="Filter">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M3 4h18M7 8h10M11 12h2"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- ── Table ──────────────────────────────────────── -->
+    <div class="table-responsive" style="overflow: visible;">
+        <table class="seeker-table">
             <thead>
                 <tr>
-                    <th>Imam Name</th>
+                    <th>Imam</th>
                     <th>Mosque</th>
                     <th>State</th>
                     <th>Matches Supervised</th>
-                    <th>Verification</th>
-                    <th>Actions</th>
+                    <th>Specialization</th>
+                    <th>Status</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
                 {% for im in imams %}
-                <tr>
+                <tr class="seeker-row">
+
+                    <!-- Imam cell -->
                     <td>
-                        <div class="user-info-cell">
-                            <div class="user-avatar-sm" style="background: rgba(59, 130, 246, 0.08); color: var(--info);">I</div>
-                            <div style="font-weight: 600;">{{ im.name }}</div>
+                        <div class="seeker-cell">
+                            <div class="imam-avatar">{{ im.name|slice:":1"|upper }}</div>
+                            <div class="seeker-info">
+                                <span class="seeker-name">{{ im.name }}</span>
+                                <span class="seeker-meta">IM-{{ im.id|stringformat:"04d" }}</span>
+                            </div>
                         </div>
                     </td>
-                    <td>{{ im.mosque }}</td>
-                    <td>{{ im.state }}</td>
-                    <td style="font-weight: 600; text-align: center;">{{ im.matches_supervised }}</td>
+
+                    <!-- Mosque -->
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 7px;">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="color: var(--text-muted); flex-shrink:0;">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+                            </svg>
+                            <span style="font-size: 0.88rem; color: var(--text-secondary);">{{ im.mosque }}</span>
+                        </div>
+                    </td>
+
+                    <!-- State -->
+                    <td class="seeker-location">{{ im.state }}</td>
+
+                    <!-- Matches Supervised -->
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 7px;">
+                            <span style="font-size: 1rem; font-weight: 700; color: var(--text-main);">{{ im.matches_supervised }}</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">matches</span>
+                        </div>
+                    </td>
+
+                    <!-- Specialization placeholder -->
+                    <td>
+                        <span class="relation-badge">
+                            {% if im.matches_supervised > 5 %}Senior Scholar
+                            {% elif im.matches_supervised > 0 %}Active Scholar
+                            {% else %}Scholar{% endif %}
+                        </span>
+                    </td>
+
+                    <!-- Status -->
                     <td>
                         {% if im.is_verified %}
-                        <span class="status-badge status-verified">✓ Verified</span>
+                        <span class="wali-status-verified">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            Verified
+                        </span>
                         {% else %}
-                        <span class="status-badge status-unverified">✗ Unverified</span>
+                        <span class="wali-status-pending">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l2 2"/></svg>
+                            Pending
+                        </span>
                         {% endif %}
                     </td>
-                    <td>
-                        <form method="POST" action="{% url 'imams' %}" style="display:inline;">
-                            {% csrf_token %}
-                            <input type="hidden" name="imam_id" value="{{ im.id }}">
-                            <input type="hidden" name="action" value="toggle_verify">
-                            <button type="submit" class="btn-custom btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">
-                                {% if im.is_verified %}Revoke{% else %}Approve{% endif %}
-                            </button>
-                        </form>
+
+                    <!-- Actions -->
+                    <td class="seeker-actions-cell" style="width: auto; white-space: nowrap;">
+                        <div style="display: flex; align-items: center; gap: 8px; justify-content: flex-end;">
+
+                            <!-- Approve / Revoke button -->
+                            {% if not im.is_verified %}
+                            <form method="POST" action="{% url 'imams' %}" style="margin: 0;">
+                                {% csrf_token %}
+                                <input type="hidden" name="imam_id" value="{{ im.id }}">
+                                <input type="hidden" name="action" value="approve">
+                                <button type="submit" class="wali-review-btn">Approve</button>
+                            </form>
+                            {% else %}
+                            <form method="POST" action="{% url 'imams' %}" style="margin: 0;">
+                                {% csrf_token %}
+                                <input type="hidden" name="imam_id" value="{{ im.id }}">
+                                <input type="hidden" name="action" value="revoke">
+                                <button type="submit" class="wali-review-btn" style="background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-color);">Revoke</button>
+                            </form>
+                            {% endif %}
+
+                            <!-- Three-dot menu -->
+                            <div class="seeker-menu-wrap">
+                                <button class="seeker-dots-btn" onclick="toggleMenu(event, 'imenu-{{ im.id }}')" title="More actions">
+                                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                        <circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>
+                                    </svg>
+                                </button>
+                                <div class="seeker-dropdown" id="imenu-{{ im.id }}">
+                                    <a href="#" class="seeker-dropdown-item">
+                                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        View Profile
+                                    </a>
+                                    <a href="#" class="seeker-dropdown-item">
+                                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                        View Assigned Matches
+                                    </a>
+                                    <form method="POST" action="{% url 'imams' %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="imam_id" value="{{ im.id }}">
+                                        <input type="hidden" name="action" value="{% if im.is_verified %}revoke{% else %}approve{% endif %}">
+                                        <button type="submit" class="seeker-dropdown-item seeker-dropdown-btn {% if im.is_verified %}seeker-dropdown-danger{% endif %}">
+                                            {% if im.is_verified %}
+                                            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                            Revoke Verification
+                                            {% else %}
+                                            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            Approve Imam
+                                            {% endif %}
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px 0;">
-                        No Imams found.
+                    <td colspan="7" style="text-align:center; color:var(--text-muted); padding:48px 0;">
+                        No imams found matching the criteria.
                     </td>
                 </tr>
                 {% endfor %}
@@ -70,4 +213,22 @@
         </table>
     </div>
 </div>
+
+<script>
+function toggleMenu(e, id) {
+    e.stopPropagation();
+    document.querySelectorAll('.seeker-dropdown.open').forEach(function(d) {
+        if (d.id !== id) d.classList.remove('open');
+    });
+    document.getElementById(id).classList.toggle('open');
+}
+document.addEventListener('click', function() {
+    document.querySelectorAll('.seeker-dropdown.open').forEach(function(d) {
+        d.classList.remove('open');
+    });
+});
+document.querySelector('.seeker-search-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') document.getElementById('imamSearchForm').submit();
+});
+</script>
 {% endblock %}

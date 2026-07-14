@@ -1391,3 +1391,22 @@ body {
     opacity: 0.88;
     color: #fff;
 }
+
+/* ═══════════════════════════════════════════════════════
+   IMAMS PAGE
+═══════════════════════════════════════════════════════ */
+.imam-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    font-family: var(--font-outfit);
+    flex-shrink: 0;
+    color: #fff;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
