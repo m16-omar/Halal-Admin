@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db.models import Count, Sum
+from django.db.models import Count, Sum, Q
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import json
@@ -63,6 +63,7 @@ def seekers_view(request):
     if request.method == 'POST':
         seeker_id = request.POST.get('seeker_id')
         action = request.POST.get('action')
+        redirect_to = request.POST.get('redirect_to', '')
         seeker = get_object_or_404(Seeker, id=seeker_id)
         if action == 'verify':
             seeker.status = 'Verified'
@@ -72,6 +73,9 @@ def seekers_view(request):
             seeker.status = 'Unverified'
             seeker.save()
             messages.warning(request, f"Seeker {seeker.full_name} status reset to Unverified.")
+        # Redirect back to detail page if action came from there
+        if redirect_to == 'detail':
+            return redirect('seeker_detail', pk=seeker.id)
         return redirect('seekers')
 
     search_query = request.GET.get('search', '')
@@ -94,6 +98,30 @@ def seekers_view(request):
         'active_page': 'seekers'
     }
     return render(request, 'dashboard/seekers.html', context)
+
+
+def seeker_detail(request, pk):
+    """Detailed profile view for a single seeker."""
+    from .models import Match
+    seeker = get_object_or_404(Seeker, pk=pk)
+    # Get associated wali (primary/first active one)
+    wali = seeker.walis.filter(is_active=True).first() or seeker.walis.first()
+    # Get matches involving this seeker
+    try:
+        matches = Match.objects.filter(
+            Q(party_a__icontains=seeker.full_name) |
+            Q(party_b__icontains=seeker.full_name)
+        ).order_by('-match_date')
+    except Exception:
+        matches = []
+    context = {
+        'seeker': seeker,
+        'wali': wali,
+        'matches': matches,
+        'matches_count': len(list(matches)),
+        'active_page': 'seekers',
+    }
+    return render(request, 'dashboard/seeker_detail.html', context)
 
 def walis_view(request):
     search_query = request.GET.get('search', '')
@@ -287,37 +315,49 @@ def api_login(request):
             email = data.get('email', '')
             password = data.get('password', '')
             
-            # Simple check: since we don't have email/password fields in Seeker model,
-            # we can look up a Seeker whose name contains the prefix of the email (before '@')
-            # or simply find a Seeker by name, or return a verified mock user.
-            name_part = email.split('@')[0].lower() if '@' in email else email.lower()
-            seeker = None
-            for s in Seeker.objects.all():
-                if name_part in s.full_name.lower():
-                    seeker = s
-                    break
+            # Try to lookup Seeker by email
+            seeker = Seeker.objects.filter(email__iexact=email).first()
             
+            # Fallback for seeded database seekers that don't have an email yet
             if not seeker:
-                seeker = Seeker.objects.first()
-                
+                name_part = email.split('@')[0].lower() if '@' in email else email.lower()
+                for s in Seeker.objects.all():
+                    if not s.email and name_part in s.full_name.lower():
+                        seeker = s
+                        break
+            
             if seeker:
-                return JsonResponse({
-                    'status': 'success',
-                    'message': 'Logged in successfully',
-                    'user': {
-                        'id': seeker.id,
-                        'full_name': seeker.full_name,
-                        'gender': seeker.gender,
-                        'state': seeker.state,
-                        'status': seeker.status,
-                        'wali_name': seeker.wali_name,
-                    }
-                })
+                # Validate password
+                expected_password = seeker.password or 'password123'
+                if password == expected_password:
+                    # Automatically save email & password for seeded users upon first login
+                    if not seeker.email:
+                        seeker.email = email
+                        seeker.password = password
+                        seeker.save()
+                        
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': 'Logged in successfully',
+                        'user': {
+                            'id': seeker.id,
+                            'full_name': seeker.full_name,
+                            'gender': seeker.gender,
+                            'state': seeker.state,
+                            'status': seeker.status,
+                            'wali_name': seeker.wali_name,
+                        }
+                    })
+                else:
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': 'Incorrect password.'
+                    }, status=401)
             else:
                 return JsonResponse({
                     'status': 'error',
-                    'message': 'No seekers found in the database. Please run seed data command.'
-                }, status=404)
+                    'message': 'Account not found. Please register first.'
+                }, status=401)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
     return JsonResponse({'status': 'error', 'message': 'Only POST method is allowed'}, status=405)
@@ -327,6 +367,16 @@ def api_seekers(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            email = data.get('email', '')
+            password = data.get('password', '')
+            
+            # Validate email uniqueness
+            if email and Seeker.objects.filter(email__iexact=email).exists():
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'An account with this email address already exists.'
+                }, status=400)
+                
             full_name = data.get('full_name', '')
             gender_val = data.get('gender', '')
             if gender_val.lower() == 'groom':
@@ -342,6 +392,8 @@ def api_seekers(request):
             
             seeker = Seeker.objects.create(
                 full_name=full_name,
+                email=email,
+                password=password,
                 gender=gender,
                 state=state,
                 wali_name=wali_name,

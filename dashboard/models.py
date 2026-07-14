@@ -11,6 +11,8 @@ class Seeker(models.Model):
         ('Unverified', 'Unverified'),
     ]
     full_name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True, null=True, blank=True)
+    password = models.CharField(max_length=128, null=True, blank=True)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
     state = models.CharField(max_length=50)
     wali_name = models.CharField(max_length=100, blank=True)
