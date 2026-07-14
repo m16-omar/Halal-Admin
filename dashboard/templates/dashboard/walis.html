@@ -148,7 +148,11 @@
                     <!-- Review button + three-dot -->
                     <td class="seeker-actions-cell" style="width: auto; white-space: nowrap;">
                         <div style="display: flex; align-items: center; gap: 8px; justify-content: flex-end;">
+                            {% if w.active_match_id %}
+                            <a href="javascript:void(0)" onclick="openChatAuditModal({{ w.active_match_id }})" class="wali-review-btn">Review</a>
+                            {% else %}
                             <a href="{% url 'seeker_detail' w.seeker.id %}" class="wali-review-btn">Review</a>
+                            {% endif %}
 
                             <div class="seeker-menu-wrap">
                                 <button class="seeker-dots-btn" onclick="toggleMenu(event, 'wmenu-{{ w.id }}')" title="More actions">

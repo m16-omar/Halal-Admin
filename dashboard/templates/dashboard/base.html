@@ -252,7 +252,51 @@
         </main>
     </div>
 
+    <!-- Global Chat Audit Modal Backdrop Overlay -->
+    <div id="chatAuditModalBackdrop" class="audit-modal-backdrop" onclick="closeChatAuditModalOnBackdrop(event)">
+        <div class="audit-modal-content" id="chatAuditModalContent">
+            <!-- Dynamically loaded partial content -->
+        </div>
+    </div>
+
     <script src="{% static 'dashboard/script.js' %}"></script>
+    <script>
+    function openChatAuditModal(matchId) {
+        const backdrop = document.getElementById('chatAuditModalBackdrop');
+        const content = document.getElementById('chatAuditModalContent');
+        if (!backdrop || !content) return;
+        
+        // Show spinner / loading indicator
+        content.innerHTML = '<div class="chat-audit-box" style="text-align:center; padding: 60px 20px;"><span style="color:var(--text-muted); font-size: 0.9rem; font-family:var(--font-inter);">Loading chat transcript...</span></div>';
+        backdrop.classList.add('open');
+        
+        // Fetch partial html
+        fetch(`/api/matches/${matchId}/audit-modal/`)
+            .then(response => {
+                if (!response.ok) throw new Error('Could not load chat');
+                return response.text();
+            })
+            .then(html => {
+                content.innerHTML = html;
+            })
+            .catch(err => {
+                content.innerHTML = `<div class="chat-audit-box" style="text-align:center; padding: 60px 20px; position:relative;"><button class="audit-modal-close" onclick="closeChatAuditModal()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button><span style="color:#dc2626; font-size: 0.9rem; font-family:var(--font-inter); font-weight: 500;">Failed to load chat transcript: ${err.message}</span></div>`;
+            });
+    }
+
+    function closeChatAuditModal() {
+        const backdrop = document.getElementById('chatAuditModalBackdrop');
+        if (backdrop) {
+            backdrop.classList.remove('open');
+        }
+    }
+
+    function closeChatAuditModalOnBackdrop(event) {
+        if (event.target === document.getElementById('chatAuditModalBackdrop')) {
+            closeChatAuditModal();
+        }
+    }
+    </script>
 </body>
 
 </html>

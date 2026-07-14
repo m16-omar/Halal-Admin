@@ -31,71 +31,75 @@
     </div>
 
     <!-- Right Pane: Live Chat Audit & Transcript -->
-    <div class="glass-card chat-history-container">
+    <div class="chat-history-container" style="flex-grow: 1;">
         {% if selected_match %}
-        <div class="chat-history-header">
-            <h2 class="card-title">{{ selected_match }}</h2>
-            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 6px; display: flex; gap: 20px;">
-                <span><strong>Imam:</strong> {{ selected_match.imam.name|default:"Unassigned" }}</span>
-                <span>
-                    <strong>Wali Presence:</strong> 
-                    {% if selected_match.seeker_female.walis.all %}
-                        <span style="color: var(--primary);">✓ Active ({{ selected_match.seeker_female.walis.first.name }})</span>
-                    {% else %}
-                        <span style="color: var(--danger);">✗ Missing</span>
-                    {% endif %}
-                </span>
-                <span><strong>Status:</strong> <span class="status-badge status-{{ selected_match.status|slugify }}" style="padding: 2px 8px; font-size: 0.7rem;">{{ selected_match.status }}</span></span>
+        <div class="chat-audit-box">
+            <!-- Header matching the screenshot exactly -->
+            <div class="chat-audit-header">
+                <h2 class="chat-audit-title">Chat audit — {{ selected_match.seeker_male.full_name }} ↔ {{ selected_match.seeker_female.full_name }}</h2>
+                <div class="chat-audit-subtitle">
+                    Match MT-{{ selected_match.id|stringformat:"04d" }} · 
+                    Wali {% if selected_match.seeker_female.walis.all %}active{% else %}inactive{% endif %} · 
+                    Imam {{ selected_match.imam.name|default:"Unassigned" }}
+                </div>
             </div>
-        </div>
 
-        <!-- Chat Transcript Scroll Area -->
-        <div class="chat-messages-scroll">
-            {% for msg in chat_history %}
-            <div class="chat-bubble 
-                {% if msg.is_flagged %}chat-bubble-flagged{% endif %}
-                {% if msg.sender == selected_match.seeker_male.full_name %}
-                    chat-bubble-male
-                {% elif msg.sender == selected_match.seeker_female.full_name %}
-                    chat-bubble-female
-                {% else %}
-                    chat-bubble-wali
-                {% endif %}">
-                
-                <div style="font-weight: 700; font-size: 0.8rem; margin-bottom: 4px;">
-                    {{ msg.sender }}
-                    {% if msg.sender == selected_match.seeker_female.walis.first.name %}
-                        <span style="color: var(--secondary); font-size: 0.7rem;">(Wali)</span>
-                    {% endif %}
-                </div>
-                
-                <div>{{ msg.text }}</div>
-                
-                <div class="chat-bubble-meta">
-                    <span>{{ msg.timestamp|date:"H:i A" }}</span>
+            <!-- Match opened statement -->
+            <div class="chat-audit-notice">
+                Match opened. Wali linked.
+            </div>
+
+            <!-- Chat Scroll Area -->
+            <div class="chat-audit-scroll">
+                {% for msg in chat_history %}
+                <div class="chat-audit-bubble 
+                    {% if msg.is_flagged %}bubble-flagged{% endif %}
+                    {% if msg.sender == selected_match.seeker_male.full_name %}
+                        bubble-groom
+                    {% elif msg.sender == selected_match.seeker_female.full_name %}
+                        bubble-bride
+                    {% else %}
+                        bubble-wali
+                    {% endif %}">
+                    
+                    <span class="sender-tag">
+                        {% if msg.sender == selected_match.seeker_male.full_name %}
+                            {{ selected_match.seeker_male.full_name }}
+                        {% elif msg.sender == selected_match.seeker_female.full_name %}
+                            {{ selected_match.seeker_female.full_name }}
+                        {% else %}
+                            Wali
+                        {% endif %}
+                    </span>
+                    
+                    <span class="message-text">{{ msg.text }}</span>
+                    
+                    <span class="time-tag">
+                        {{ msg.timestamp|date:"n/j/Y, g:i:s A" }}
+                    </span>
+
                     {% if msg.is_flagged %}
-                    <span class="flag-alert-reason">⚠ AI Flag: {{ msg.flag_reason }}</span>
+                    <span class="bubble-flagged-reason">⚠ AI Flag: {{ msg.flag_reason }}</span>
                     {% endif %}
                 </div>
+                {% empty %}
+                <div style="text-align: center; color: var(--text-muted); padding: 32px 0;">
+                    No messages recorded in this chat.
+                </div>
+                {% endfor %}
             </div>
-            {% empty %}
-            <div style="text-align: center; color: var(--text-muted); padding: 32px 0;">
-                No messages recorded in this chat.
+            
+            <!-- Actions bar -->
+            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color); display:flex; justify-content: flex-end; gap: 12px;">
+                <form method="POST" action="{% url 'reports' %}">
+                    {% csrf_token %}
+                    <a href="{% url 'reports' %}?status=open" class="btn-custom btn-secondary">Report Action</a>
+                    <a href="{% url 'matches' %}" class="btn-custom">Back to Matches</a>
+                </form>
             </div>
-            {% endfor %}
-        </div>
-        
-        <div style="padding-top: 16px; border-top: 1px solid var(--border-color); display:flex; justify-content: flex-end; gap: 12px;">
-            <form method="POST" action="{% url 'reports' %}">
-                {% csrf_token %}
-                <input type="hidden" name="report_id" value="">
-                <!-- Simple action hooks -->
-                <a href="{% url 'reports' %}?status=open" class="btn-custom btn-secondary">Report Action</a>
-                <a href="{% url 'matches' %}" class="btn-custom">Back to Matches</a>
-            </form>
         </div>
         {% else %}
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted);">
+        <div class="glass-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 350px; color: var(--text-muted);">
             <div style="font-size: 3rem; margin-bottom: 16px;">💬</div>
             <h3>Select a Conversation to Audit</h3>
             <p style="font-size: 0.9rem; margin-top: 6px;">Click on a flagged trigger card in the left sidebar to view the full chat log.</p>

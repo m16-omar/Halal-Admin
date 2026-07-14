@@ -1,0 +1,63 @@
+<div class="chat-audit-box">
+    <!-- Close button -->
+    <button class="audit-modal-close" onclick="closeChatAuditModal()" aria-label="Close modal">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+    </button>
+
+    <!-- Header matching the screenshot exactly -->
+    <div class="chat-audit-header">
+        <h2 class="chat-audit-title">Chat audit — {{ selected_match.seeker_male.full_name }} ↔ {{ selected_match.seeker_female.full_name }}</h2>
+        <div class="chat-audit-subtitle">
+            Match MT-{{ selected_match.id|stringformat:"04d" }} · 
+            Wali {% if selected_match.seeker_female.walis.all %}active{% else %}inactive{% endif %} · 
+            Imam {{ selected_match.imam.name|default:"Unassigned" }}
+        </div>
+    </div>
+
+    <!-- Match opened statement -->
+    <div class="chat-audit-notice">
+        Match opened. Wali linked.
+    </div>
+
+    <!-- Chat Scroll Area -->
+    <div class="chat-audit-scroll">
+        {% for msg in chat_history %}
+        <div class="chat-audit-bubble 
+            {% if msg.is_flagged %}bubble-flagged{% endif %}
+            {% if msg.sender == selected_match.seeker_male.full_name %}
+                bubble-groom
+            {% elif msg.sender == selected_match.seeker_female.full_name %}
+                bubble-bride
+            {% else %}
+                bubble-wali
+            {% endif %}">
+            
+            <span class="sender-tag">
+                {% if msg.sender == selected_match.seeker_male.full_name %}
+                    {{ selected_match.seeker_male.full_name }}
+                {% elif msg.sender == selected_match.seeker_female.full_name %}
+                    {{ selected_match.seeker_female.full_name }}
+                {% else %}
+                    Wali
+                {% endif %}
+            </span>
+            
+            <span class="message-text">{{ msg.text }}</span>
+            
+            <span class="time-tag">
+                {{ msg.timestamp|date:"n/j/Y, g:i:s A" }}
+            </span>
+
+            {% if msg.is_flagged %}
+            <span class="bubble-flagged-reason">⚠ AI Flag: {{ msg.flag_reason }}</span>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div style="text-align: center; color: var(--text-muted); padding: 32px 0;">
+            No messages recorded in this chat.
+        </div>
+        {% endfor %}
+    </div>
+</div>

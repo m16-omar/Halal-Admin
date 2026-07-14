@@ -184,6 +184,11 @@ def walis_view(request):
                 walis.filter(seeker__full_name__icontains=search_query) | \
                 walis.filter(seeker__state__icontains=search_query)
 
+    # Attach active match id for modal review
+    for w in walis:
+        active_match = w.seeker.matches_as_female.first() or w.seeker.matches_as_male.first()
+        w.active_match_id = active_match.id if active_match else None
+
     context = {
         'walis':          walis,
         'search_query':   search_query,
@@ -597,3 +602,15 @@ def api_submit_verification(request):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
     return JsonResponse({'status': 'error', 'message': 'Only POST method is allowed'}, status=405)
+
+
+def chat_audit_modal_partial(request, match_id):
+    """Returns HTML partial of the chat audit box for modal overlay."""
+    match = get_object_or_404(Match, id=match_id)
+    chat_history = ChatMessage.objects.filter(match=match).order_by('timestamp')
+    context = {
+        'selected_match': match,
+        'chat_history': chat_history,
+    }
+    return render(request, 'dashboard/chat_audit_modal_partial.html', context)
+
