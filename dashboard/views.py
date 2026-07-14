@@ -147,18 +147,54 @@ def seeker_detail(request, pk):
     return render(request, 'dashboard/seeker_detail.html', context)
 
 def walis_view(request):
+    if request.method == 'POST':
+        wali_id = request.POST.get('wali_id')
+        action  = request.POST.get('action')
+        wali = get_object_or_404(Wali, id=wali_id)
+        if action == 'verify':
+            wali.is_active = True
+            wali.save()
+            messages.success(request, f"{wali.name} has been verified.")
+        elif action == 'suspend':
+            wali.is_active = False
+            wali.save()
+            messages.warning(request, f"{wali.name} has been suspended.")
+        return redirect('walis')
+
     search_query = request.GET.get('search', '')
-    walis = Wali.objects.all().order_by('-id')
-    
+    tab_filter   = request.GET.get('tab', 'all')  # all | verified | pending
+
+    all_walis = Wali.objects.all()
+
+    # Metric totals
+    total_walis   = all_walis.count()
+    verified_count = all_walis.filter(is_active=True).count()
+    pending_count  = all_walis.filter(is_active=False).count()
+
+    # Base queryset with tab filter
+    walis = all_walis.order_by('-id')
+    if tab_filter == 'verified':
+        walis = walis.filter(is_active=True)
+    elif tab_filter == 'pending':
+        walis = walis.filter(is_active=False)
+
+    # Search
     if search_query:
-        walis = walis.filter(name__icontains=search_query) | walis.filter(seeker__full_name__icontains=search_query)
+        walis = walis.filter(name__icontains=search_query) | \
+                walis.filter(seeker__full_name__icontains=search_query) | \
+                walis.filter(seeker__state__icontains=search_query)
 
     context = {
-        'walis': walis,
-        'search_query': search_query,
-        'active_page': 'walis'
+        'walis':          walis,
+        'search_query':   search_query,
+        'tab_filter':     tab_filter,
+        'total_walis':    total_walis,
+        'verified_count': verified_count,
+        'pending_count':  pending_count,
+        'active_page':    'walis',
     }
     return render(request, 'dashboard/walis.html', context)
+
 
 def imams_view(request):
     if request.method == 'POST':

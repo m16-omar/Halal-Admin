@@ -1,60 +1,203 @@
 {% extends 'dashboard/base.html' %}
 
-{% block page_title %}Walis Management{% endblock %}
+{% block page_title %}Walis — Chaperone Guardians{% endblock %}
 
 {% block content %}
-<div class="glass-card">
-    <div class="card-header-bar">
-        <h2 class="card-title">Chaperone Guardians (Walis)</h2>
-        <span style="font-size: 0.9rem; color: var(--text-muted);">{{ walis.count }} active Walis</span>
+
+<!-- ── Metric Summary Cards ─────────────────────────── -->
+<div class="wali-metric-row">
+
+    <div class="wali-metric-card">
+        <div class="wali-metric-icon wali-icon-blue">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+        </div>
+        <div>
+            <div class="wali-metric-label">Total Walis</div>
+            <div class="wali-metric-value">{{ total_walis }}</div>
+        </div>
     </div>
 
-    <!-- Search bar -->
-    <form method="GET" action="{% url 'walis' %}" class="search-filter-bar">
-        <input type="text" name="search" placeholder="Search by Wali or Seeker..." value="{{ search_query }}" class="input-custom" style="min-width: 250px;">
-        <button type="submit" class="btn-custom">Search</button>
-        <a href="{% url 'walis' %}" class="btn-custom btn-secondary">Clear</a>
-    </form>
+    <div class="wali-metric-card">
+        <div class="wali-metric-icon wali-icon-green">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+        </div>
+        <div>
+            <div class="wali-metric-label">Verified</div>
+            <div class="wali-metric-value">{{ verified_count }}</div>
+        </div>
+    </div>
 
-    <!-- Table -->
-    <div class="table-responsive">
-        <table class="table-custom">
+    <div class="wali-metric-card">
+        <div class="wali-metric-icon wali-icon-amber">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+        </div>
+        <div>
+            <div class="wali-metric-label">Pending</div>
+            <div class="wali-metric-value">{{ pending_count }}</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ── Main Card ────────────────────────────────────── -->
+<div class="glass-card" style="overflow: visible;">
+
+    <!-- Topbar: tabs + search -->
+    <div class="seekers-topbar">
+        <!-- Pill tabs -->
+        <div class="seeker-tabs">
+            <a href="?tab=all{% if search_query %}&search={{ search_query }}{% endif %}"
+               class="seeker-tab {% if tab_filter == 'all' %}active{% endif %}">
+                All <span class="tab-count">{{ total_walis }}</span>
+            </a>
+            <a href="?tab=verified{% if search_query %}&search={{ search_query }}{% endif %}"
+               class="seeker-tab {% if tab_filter == 'verified' %}active{% endif %}">
+                Verified <span class="tab-count">{{ verified_count }}</span>
+            </a>
+            <a href="?tab=pending{% if search_query %}&search={{ search_query }}{% endif %}"
+               class="seeker-tab {% if tab_filter == 'pending' %}active{% endif %}">
+                Pending <span class="tab-count tab-count-amber">{{ pending_count }}</span>
+            </a>
+        </div>
+
+        <!-- Search -->
+        <div class="seeker-search-row">
+            <form method="GET" action="" class="seeker-search-form" id="waliSearchForm">
+                <input type="hidden" name="tab" value="{{ tab_filter }}">
+                <div class="seeker-search-wrap">
+                    <svg class="seeker-search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" name="search" value="{{ search_query }}" placeholder="Search wali or seeker..." class="seeker-search-input" autocomplete="off">
+                </div>
+            </form>
+            <button class="seeker-filter-btn" title="Filter">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M3 4h18M7 8h10M11 12h2"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- ── Table ──────────────────────────────────── -->
+    <div class="table-responsive" style="overflow: visible;">
+        <table class="seeker-table">
             <thead>
                 <tr>
-                    <th>Wali Name</th>
-                    <th>Associated Seeker</th>
+                    <th>Guardian (Wali)</th>
+                    <th>Ward (Seeker)</th>
+                    <th>Location</th>
                     <th>Relationship</th>
-                    <th>Contact Number</th>
-                    <th>Chaperone Status</th>
+                    <th>Contact</th>
+                    <th>Status</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
                 {% for w in walis %}
-                <tr>
+                <tr class="seeker-row">
+
+                    <!-- Wali cell -->
                     <td>
-                        <div class="user-info-cell">
-                            <div class="user-avatar-sm" style="background: rgba(251, 191, 36, 0.08); color: var(--secondary);">W</div>
-                            <div style="font-weight: 600;">{{ w.name }}</div>
+                        <div class="seeker-cell">
+                            <div class="seeker-avatar" style="background: linear-gradient(135deg, #d97706, #f59e0b);">
+                                {{ w.name|slice:":1"|upper }}
+                            </div>
+                            <div class="seeker-info">
+                                <span class="seeker-name">{{ w.name }}</span>
+                                <span class="seeker-meta">WL-{{ w.id|stringformat:"04d" }} · {{ w.relationship }}</span>
+                            </div>
                         </div>
                     </td>
+
+                    <!-- Associated Seeker -->
                     <td>
-                        <div style="font-weight: 500;">{{ w.seeker.full_name }}</div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">{{ w.seeker.state }}</div>
+                        <a href="{% url 'seeker_detail' w.seeker.id %}" style="text-decoration: none; color: inherit;">
+                            <div class="seeker-cell">
+                                <div class="seeker-avatar {{ w.seeker.gender|lower }}" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                    {{ w.seeker.full_name|slice:":1"|upper }}
+                                </div>
+                                <div class="seeker-info">
+                                    <span class="seeker-name" style="font-size: 0.85rem;">{{ w.seeker.full_name }}</span>
+                                    <span class="seeker-meta">SK-{{ w.seeker.id|stringformat:"04d" }}</span>
+                                </div>
+                            </div>
+                        </a>
                     </td>
-                    <td>{{ w.relationship }}</td>
-                    <td><code>{{ w.contact_number }}</code></td>
+
+                    <!-- Location -->
+                    <td class="seeker-location">{{ w.seeker.state }}</td>
+
+                    <!-- Relationship -->
+                    <td>
+                        <span style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 500;">{{ w.relationship }}</span>
+                    </td>
+
+                    <!-- Contact -->
+                    <td>
+                        <span style="font-family: monospace; font-size: 0.85rem; color: var(--text-secondary);">{{ w.contact_number }}</span>
+                    </td>
+
+                    <!-- Status -->
                     <td>
                         {% if w.is_active %}
-                        <span class="status-badge status-verified">● Active</span>
+                        <span class="sk-badge sk-badge-verified">
+                            <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" style="margin-right: 4px;"><path d="M5 13l4 4L19 7"/></svg>
+                            Verified
+                        </span>
                         {% else %}
-                        <span class="status-badge status-unverified">● Inactive</span>
+                        <span class="sk-badge sk-badge-pending">Pending</span>
                         {% endif %}
+                    </td>
+
+                    <!-- Actions three-dot menu -->
+                    <td class="seeker-actions-cell">
+                        <div class="seeker-menu-wrap">
+                            <button class="seeker-dots-btn" onclick="toggleMenu(event, 'wmenu-{{ w.id }}')" title="Actions">
+                                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                    <circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>
+                                </svg>
+                            </button>
+                            <div class="seeker-dropdown" id="wmenu-{{ w.id }}">
+                                <a href="{% url 'seeker_detail' w.seeker.id %}" class="seeker-dropdown-item">
+                                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    View Ward's Profile
+                                </a>
+                                {% if not w.is_active %}
+                                <form method="POST" action="{% url 'walis' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="wali_id" value="{{ w.id }}">
+                                    <input type="hidden" name="action" value="verify">
+                                    <button type="submit" class="seeker-dropdown-item seeker-dropdown-btn">
+                                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        Verify Wali
+                                    </button>
+                                </form>
+                                {% endif %}
+                                <form method="POST" action="{% url 'walis' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="wali_id" value="{{ w.id }}">
+                                    <input type="hidden" name="action" value="suspend">
+                                    <button type="submit" class="seeker-dropdown-item seeker-dropdown-btn seeker-dropdown-danger"
+                                        onclick="return confirm('Suspend {{ w.name }}?')">
+                                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                        Suspend
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 32px 0;">
-                        No Walis found.
+                    <td colspan="7" style="text-align:center; color:var(--text-muted); padding:48px 0;">
+                        No walis found matching the criteria.
                     </td>
                 </tr>
                 {% endfor %}
@@ -62,4 +205,22 @@
         </table>
     </div>
 </div>
+
+<script>
+function toggleMenu(e, id) {
+    e.stopPropagation();
+    document.querySelectorAll('.seeker-dropdown.open').forEach(function(d) {
+        if (d.id !== id) d.classList.remove('open');
+    });
+    document.getElementById(id).classList.toggle('open');
+}
+document.addEventListener('click', function() {
+    document.querySelectorAll('.seeker-dropdown.open').forEach(function(d) {
+        d.classList.remove('open');
+    });
+});
+document.querySelector('.seeker-search-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') document.getElementById('waliSearchForm').submit();
+});
+</script>
 {% endblock %}
