@@ -73,31 +73,54 @@ def seekers_view(request):
             seeker.status = 'Unverified'
             seeker.save()
             messages.warning(request, f"Seeker {seeker.full_name} status reset to Unverified.")
+        elif action == 'suspend':
+            seeker.status = 'Unverified'
+            seeker.save()
+            messages.warning(request, f"Seeker {seeker.full_name} has been suspended.")
         # Redirect back to detail page if action came from there
         if redirect_to == 'detail':
             return redirect('seeker_detail', pk=seeker.id)
         return redirect('seekers')
 
     search_query = request.GET.get('search', '')
-    gender_filter = request.GET.get('gender', '')
-    status_filter = request.GET.get('status', '')
+    tab_filter   = request.GET.get('tab', 'all')   # all | grooms | brides | pending
 
-    seekers = Seeker.objects.all().order_by('-id')
+    all_seekers = Seeker.objects.all()
+
+    # Tab counts
+    total_count   = all_seekers.count()
+    grooms_count  = all_seekers.filter(gender='Male').count()
+    brides_count  = all_seekers.filter(gender='Female').count()
+    pending_count = all_seekers.filter(status='Pending').count()
+
+    # Apply tab filter
+    seekers = all_seekers.order_by('-id')
+    if tab_filter == 'grooms':
+        seekers = seekers.filter(gender='Male')
+    elif tab_filter == 'brides':
+        seekers = seekers.filter(gender='Female')
+    elif tab_filter == 'pending':
+        seekers = seekers.filter(status='Pending')
+
+    # Apply search
     if search_query:
-        seekers = seekers.filter(full_name__icontains=search_query)
-    if gender_filter:
-        seekers = seekers.filter(gender=gender_filter)
-    if status_filter:
-        seekers = seekers.filter(status=status_filter)
+        seekers = seekers.filter(full_name__icontains=search_query) | seekers.filter(state__icontains=search_query)
+
+    # Annotate with wali count
+    seekers = seekers.annotate(wali_count=Count('walis'))
 
     context = {
-        'seekers': seekers,
-        'search_query': search_query,
-        'gender_filter': gender_filter,
-        'status_filter': status_filter,
-        'active_page': 'seekers'
+        'seekers':       seekers,
+        'search_query':  search_query,
+        'tab_filter':    tab_filter,
+        'total_count':   total_count,
+        'grooms_count':  grooms_count,
+        'brides_count':  brides_count,
+        'pending_count': pending_count,
+        'active_page':   'seekers',
     }
     return render(request, 'dashboard/seekers.html', context)
+
 
 
 def seeker_detail(request, pk):

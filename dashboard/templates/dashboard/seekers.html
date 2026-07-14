@@ -3,96 +3,161 @@
 {% block page_title %}Seekers Management{% endblock %}
 
 {% block content %}
-<div class="glass-card">
-    <div class="card-header-bar">
-        <h2 class="card-title">All Seekers</h2>
-        <span style="font-size: 0.9rem; color: var(--text-muted);">{{ seekers.count }} registered profiles</span>
+<div class="glass-card" style="overflow: visible;">
+
+    <!-- ── Tab Filter Row ─────────────────────────────── -->
+    <div class="seekers-topbar">
+        <!-- Pill tabs -->
+        <div class="seeker-tabs">
+            <a href="?tab=all{% if search_query %}&search={{ search_query }}{% endif %}"
+               class="seeker-tab {% if tab_filter == 'all' %}active{% endif %}">
+                All <span class="tab-count">{{ total_count }}</span>
+            </a>
+            <a href="?tab=grooms{% if search_query %}&search={{ search_query }}{% endif %}"
+               class="seeker-tab {% if tab_filter == 'grooms' %}active{% endif %}">
+                Grooms
+            </a>
+            <a href="?tab=brides{% if search_query %}&search={{ search_query }}{% endif %}"
+               class="seeker-tab {% if tab_filter == 'brides' %}active{% endif %}">
+                Brides
+            </a>
+            <a href="?tab=pending{% if search_query %}&search={{ search_query }}{% endif %}"
+               class="seeker-tab {% if tab_filter == 'pending' %}active{% endif %}">
+                Pending <span class="tab-count tab-count-amber">{{ pending_count }}</span>
+            </a>
+        </div>
+
+        <!-- Search + filter icon -->
+        <div class="seeker-search-row">
+            <form method="GET" action="" class="seeker-search-form" id="seekerSearchForm">
+                <input type="hidden" name="tab" value="{{ tab_filter }}">
+                <div class="seeker-search-wrap">
+                    <svg class="seeker-search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" name="search" value="{{ search_query }}" placeholder="Search name or city..." class="seeker-search-input" autocomplete="off">
+                </div>
+            </form>
+            <button class="seeker-filter-btn" title="Filter">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M3 4h18M7 8h10M11 12h2"/>
+                </svg>
+            </button>
+        </div>
     </div>
 
-    <!-- Search & Filter Bar -->
-    <form method="GET" action="{% url 'seekers' %}" class="search-filter-bar">
-        <input type="text" name="search" placeholder="Search by name..." value="{{ search_query }}" class="input-custom">
-        
-        <select name="gender" class="select-custom">
-            <option value="">All Genders</option>
-            <option value="Male" {% if gender_filter == 'Male' %}selected{% endif %}>Male</option>
-            <option value="Female" {% if gender_filter == 'Female' %}selected{% endif %}>Female</option>
-        </select>
-
-        <select name="status" class="select-custom">
-            <option value="">All Statuses</option>
-            <option value="Verified" {% if status_filter == 'Verified' %}selected{% endif %}>Verified</option>
-            <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
-            <option value="Unverified" {% if status_filter == 'Unverified' %}selected{% endif %}>Unverified</option>
-        </select>
-
-        <button type="submit" class="btn-custom">Apply Filters</button>
-        <a href="{% url 'seekers' %}" class="btn-custom btn-secondary">Clear</a>
-    </form>
-
-    <!-- Table -->
-    <div class="table-responsive">
-        <table class="table-custom">
+    <!-- ── Table ──────────────────────────────────────── -->
+    <div class="table-responsive" style="overflow: visible;">
+        <table class="seeker-table">
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Gender</th>
-                    <th>State</th>
-                    <th>Wali Name</th>
-                    <th>Joined Date</th>
+                    <th>Seeker</th>
+                    <th>Location</th>
                     <th>Status</th>
-                    <th>Actions</th>
+                    <th>Wali</th>
+                    <th>Matches</th>
+                    <th>Last active</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
                 {% for s in seekers %}
-                <tr>
+                <tr class="seeker-row">
+                    <!-- Seeker cell -->
                     <td>
-                        <div class="user-info-cell">
-                            <div class="user-avatar-sm">{{ s.full_name|slice:":1" }}</div>
-                            <div style="font-weight: 600;">{{ s.full_name }}</div>
-                        </div>
-                    </td>
-                    <td>{{ s.gender }}</td>
-                    <td>{{ s.state }}</td>
-                    <td>{{ s.wali_name|default:"—" }}</td>
-                    <td>{{ s.join_date|date:"M d, Y" }}</td>
-                    <td>
-                        <span class="status-badge status-{{ s.status|lower }}">{{ s.status }}</span>
-                    </td>
-                    <td>
-                        <div class="action-buttons-cell">
-                            <!-- View Profile -->
-                            <a href="{% url 'seeker_detail' s.id %}" class="btn-custom btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
-                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                    <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                </svg>
-                                View
-                            </a>
-                            <!-- Verify / Deactivate -->
-                            {% if s.status != 'Verified' %}
-                            <form method="POST" action="{% url 'seekers' %}" style="display:inline;">
-                                {% csrf_token %}
-                                <input type="hidden" name="seeker_id" value="{{ s.id }}">
-                                <input type="hidden" name="action" value="verify">
-                                <button type="submit" class="btn-custom" style="padding: 6px 12px; font-size: 0.8rem;">Verify</button>
-                            </form>
-                            {% else %}
-                            <form method="POST" action="{% url 'seekers' %}" style="display:inline;">
-                                {% csrf_token %}
-                                <input type="hidden" name="seeker_id" value="{{ s.id }}">
-                                <input type="hidden" name="action" value="deactivate">
-                                <button type="submit" class="btn-custom btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">Deactivate</button>
-                            </form>
-                            {% endif %}
+                        <div class="seeker-cell">
+                            <div class="seeker-avatar {{ s.gender|lower }}">{{ s.full_name|slice:":1"|upper }}</div>
+                            <div class="seeker-info">
+                                <div class="seeker-name-row">
+                                    <span class="seeker-name">{{ s.full_name }}</span>
+                                    {% if s.status == 'Verified' %}
+                                    <span class="seeker-verified-icon" title="Verified">
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <span class="seeker-meta">SK-{{ s.id|stringformat:"04d" }} · {{ s.gender }}</span>
+                            </div>
                         </div>
                     </td>
 
+                    <!-- Location -->
+                    <td class="seeker-location">{{ s.state }}</td>
+
+                    <!-- Status badge -->
+                    <td>
+                        {% if s.status == 'Verified' %}
+                        <span class="sk-badge sk-badge-verified">Verified</span>
+                        {% elif s.status == 'Pending' %}
+                        <span class="sk-badge sk-badge-pending">Pending</span>
+                        {% else %}
+                        <span class="sk-badge sk-badge-unverified">Unverified</span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Wali linked -->
+                    <td>
+                        {% if s.wali_count > 0 %}
+                        <span class="wali-linked">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            Linked
+                        </span>
+                        {% else %}
+                        <span style="color: var(--text-muted);">—</span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Matches placeholder -->
+                    <td style="color: var(--text-main); font-weight: 500;">—</td>
+
+                    <!-- Last active -->
+                    <td class="seeker-last-active">{{ s.join_date|date:"n/j/Y" }}</td>
+
+                    <!-- Three-dot action menu -->
+                    <td class="seeker-actions-cell">
+                        <div class="seeker-menu-wrap">
+                            <button class="seeker-dots-btn" onclick="toggleMenu(event, 'menu-{{ s.id }}')" title="Actions">
+                                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                    <circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>
+                                </svg>
+                            </button>
+                            <div class="seeker-dropdown" id="menu-{{ s.id }}">
+                                <a href="{% url 'seeker_detail' s.id %}" class="seeker-dropdown-item">
+                                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    View profile
+                                </a>
+                                {% if s.status != 'Verified' %}
+                                <form method="POST" action="{% url 'seekers' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="seeker_id" value="{{ s.id }}">
+                                    <input type="hidden" name="action" value="verify">
+                                    <button type="submit" class="seeker-dropdown-item seeker-dropdown-btn">
+                                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        Verify identity
+                                    </button>
+                                </form>
+                                {% endif %}
+                                <a href="{% url 'walis' %}" class="seeker-dropdown-item">
+                                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                                    Link wali
+                                </a>
+                                <form method="POST" action="{% url 'seekers' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="seeker_id" value="{{ s.id }}">
+                                    <input type="hidden" name="action" value="suspend">
+                                    <button type="submit" class="seeker-dropdown-item seeker-dropdown-btn seeker-dropdown-danger"
+                                        onclick="return confirm('Suspend {{ s.full_name }}?')">
+                                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                        Suspend
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px 0;">
+                    <td colspan="7" style="text-align:center; color:var(--text-muted); padding:48px 0;">
                         No seekers found matching the criteria.
                     </td>
                 </tr>
@@ -101,4 +166,25 @@
         </table>
     </div>
 </div>
+
+<!-- Close dropdown on outside click -->
+<script>
+function toggleMenu(e, id) {
+    e.stopPropagation();
+    document.querySelectorAll('.seeker-dropdown.open').forEach(function(d) {
+        if (d.id !== id) d.classList.remove('open');
+    });
+    document.getElementById(id).classList.toggle('open');
+}
+document.addEventListener('click', function() {
+    document.querySelectorAll('.seeker-dropdown.open').forEach(function(d) {
+        d.classList.remove('open');
+    });
+});
+
+// Live search on type
+document.querySelector('.seeker-search-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') document.getElementById('seekerSearchForm').submit();
+});
+</script>
 {% endblock %}
