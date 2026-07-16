@@ -604,6 +604,62 @@ def api_submit_verification(request):
     return JsonResponse({'status': 'error', 'message': 'Only POST method is allowed'}, status=405)
 
 
+@csrf_exempt
+def api_premium_upgrade(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            seeker_id = data.get('seeker_id')
+            seeker = get_object_or_404(Seeker, id=seeker_id)
+            
+            # Update detailed fields
+            seeker.age = data.get('age', seeker.age)
+            seeker.state_of_origin = data.get('state_of_origin', seeker.state_of_origin)
+            seeker.currently_based_in = data.get('currently_based_in', seeker.currently_based_in)
+            seeker.tribe = data.get('tribe', seeker.tribe)
+            seeker.marital_status = data.get('marital_status', seeker.marital_status)
+            seeker.children = data.get('children', seeker.children)
+            seeker.education = data.get('education', seeker.education)
+            seeker.occupation = data.get('occupation', seeker.occupation)
+            seeker.blood_group = data.get('blood_group', seeker.blood_group)
+            seeker.genotype = data.get('genotype', seeker.genotype)
+            seeker.health_status = data.get('health_status', seeker.health_status)
+            seeker.islamic_level = data.get('islamic_level', seeker.islamic_level)
+            seeker.mode_of_dressing = data.get('mode_of_dressing', seeker.mode_of_dressing)
+            seeker.appearance = data.get('appearance', seeker.appearance)
+            seeker.open_to_polygamy = data.get('open_to_polygamy', seeker.open_to_polygamy)
+            seeker.willing_to_relocate = data.get('willing_to_relocate', seeker.willing_to_relocate)
+            seeker.marriage_timeline = data.get('marriage_timeline', seeker.marriage_timeline)
+            seeker.about_me = data.get('about_me', seeker.about_me)
+            
+            # Spouse Preferences
+            seeker.spouse_age_range = data.get('spouse_age_range', seeker.spouse_age_range)
+            seeker.spouse_marital_status = data.get('spouse_marital_status', seeker.spouse_marital_status)
+            seeker.spouse_children = data.get('spouse_children', seeker.spouse_children)
+            seeker.spouse_location = data.get('spouse_location', seeker.spouse_location)
+            seeker.spouse_desired_qualities = data.get('spouse_desired_qualities', seeker.spouse_desired_qualities)
+            
+            # Upgrade user to Verified tier upon payment & details submission
+            seeker.status = 'Verified'
+            seeker.save()
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Upgrade to Tier 1 Premium completed successfully',
+                'user': {
+                    'id': seeker.id,
+                    'full_name': seeker.full_name,
+                    'gender': seeker.gender,
+                    'state': seeker.state,
+                    'status': seeker.status,
+                    'wali_name': seeker.wali_name,
+                }
+            })
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Only POST method is allowed'}, status=405)
+
+
 def chat_audit_modal_partial(request, match_id):
     """Returns HTML partial of the chat audit box for modal overlay."""
     match = get_object_or_404(Match, id=match_id)
