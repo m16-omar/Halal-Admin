@@ -76,69 +76,228 @@
 <!-- Info Grid -->
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
 
-    <!-- Personal Info -->
-    <div class="glass-card">
-        <div class="card-header-bar">
-            <h2 class="card-title">Personal Information</h2>
+    <!-- Left Column: Personal, Health, Religion, Bio -->
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+        
+        <!-- Personal Info -->
+        <div class="glass-card">
+            <div class="card-header-bar">
+                <h2 class="card-title">Personal Details</h2>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 8px;">
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Full Name</span>
+                    <span style="font-weight: 600; color: var(--text-main);">{{ seeker.full_name }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Gender</span>
+                    <span style="font-weight: 600; color: var(--text-main);">{{ seeker.gender }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Age</span>
+                    <span style="font-weight: 600; color: var(--text-main);">{{ seeker.age|default:"—" }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Tribe</span>
+                    <span style="font-weight: 600; color: var(--text-main);">{{ seeker.tribe|default:"—" }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">State of Origin</span>
+                    <span style="font-weight: 600; color: var(--text-main);">{{ seeker.state_of_origin|default:"—" }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Currently Based In</span>
+                    <span style="font-weight: 600; color: var(--text-main);">{{ seeker.currently_based_in|default:seeker.state }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Marital Status</span>
+                    <span style="font-weight: 600; color: var(--text-main);">{{ seeker.marital_status|default:"—" }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Children</span>
+                    <span style="font-weight: 600; color: var(--text-main);">{{ seeker.children|default:"—" }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Education</span>
+                    <span style="font-weight: 600; color: var(--text-main);">{{ seeker.education|default:"—" }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0;">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Occupation</span>
+                    <span style="font-weight: 600; color: var(--text-main);">{{ seeker.occupation|default:"—" }}</span>
+                </div>
+            </div>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 8px;">
-            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
-                <span style="color: var(--text-muted); font-size: 0.88rem;">Full Name</span>
-                <span style="font-weight: 600;">{{ seeker.full_name }}</span>
+
+        <!-- Health & Appearance -->
+        <div class="glass-card">
+            <div class="card-header-bar">
+                <h2 class="card-title">Health & Physical Details</h2>
             </div>
-            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
-                <span style="color: var(--text-muted); font-size: 0.88rem;">Gender</span>
-                <span style="font-weight: 600;">{{ seeker.gender }}</span>
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 8px;">
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Blood Group</span>
+                    <span style="font-weight: 600; color: var(--text-main);">{{ seeker.blood_group|default:"—" }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Genotype</span>
+                    <span style="font-weight: 600; color: var(--text-main);">{{ seeker.genotype|default:"—" }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Health Status</span>
+                    <span style="font-weight: 600; color: var(--text-main); text-align: right; max-width: 60%;">{{ seeker.health_status|default:"—" }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0;">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Appearance</span>
+                    <span style="font-weight: 600; color: var(--text-main); text-align: right; max-width: 60%;">{{ seeker.appearance|default:"—" }}</span>
+                </div>
             </div>
-            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
-                <span style="color: var(--text-muted); font-size: 0.88rem;">State</span>
-                <span style="font-weight: 600;">{{ seeker.state }}</span>
+        </div>
+
+        <!-- Religious Details -->
+        <div class="glass-card">
+            <div class="card-header-bar">
+                <h2 class="card-title">Religious Profile & Lifestyle</h2>
             </div>
-            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
-                <span style="color: var(--text-muted); font-size: 0.88rem;">Email</span>
-                <span style="font-weight: 600;">{{ seeker.email|default:"—" }}</span>
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 8px;">
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Islamic Practice Level</span>
+                    <span style="font-weight: 600; color: var(--text-main); text-align: right; max-width: 60%;">{{ seeker.islamic_level|default:"—" }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Mode of Dressing</span>
+                    <span style="font-weight: 600; color: var(--text-main); text-align: right; max-width: 60%;">{{ seeker.mode_of_dressing|default:"—" }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Open to Polygamy</span>
+                    <span style="font-weight: 600; color: var(--text-main);">{{ seeker.open_to_polygamy }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Willing to Relocate</span>
+                    <span style="font-weight: 600; color: var(--text-main);">{{ seeker.willing_to_relocate }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0;">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Marriage Timeline</span>
+                    <span style="font-weight: 600; color: var(--text-main); text-align: right; max-width: 60%;">{{ seeker.marriage_timeline|default:"—" }}</span>
+                </div>
             </div>
-            <div style="display: flex; justify-content: space-between; padding: 12px 0;">
-                <span style="color: var(--text-muted); font-size: 0.88rem;">Join Date</span>
-                <span style="font-weight: 600;">{{ seeker.join_date|date:"F d, Y" }}</span>
+        </div>
+
+        <!-- About Me Bio -->
+        <div class="glass-card">
+            <div class="card-header-bar">
+                <h2 class="card-title">📝 About Me</h2>
             </div>
+            <p style="font-size: 0.92rem; color: var(--text-main); line-height: 1.6; margin-top: 8px; margin-bottom: 0;">
+                {{ seeker.about_me|default:"No description provided yet." }}
+            </p>
         </div>
     </div>
 
-    <!-- Wali Info -->
-    <div class="glass-card">
-        <div class="card-header-bar">
-            <h2 class="card-title">Wali (Guardian) Information</h2>
+    <!-- Right Column: Wali, Preferences, Handling & Contact -->
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+
+        <!-- Wali Info -->
+        <div class="glass-card">
+            <div class="card-header-bar">
+                <h2 class="card-title">Wali (Guardian) Details</h2>
+            </div>
+            {% if wali %}
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 8px;">
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Wali Name</span>
+                    <span style="font-weight: 600; color: var(--text-main);">{{ wali.name }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Relationship</span>
+                    <span style="font-weight: 600; color: var(--text-main);">{{ wali.relationship }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Contact Number</span>
+                    <span style="font-weight: 600; color: var(--text-main);">{{ wali.contact_number }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0;">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Status</span>
+                    <span class="status-badge {% if wali.is_active %}status-verified{% else %}status-unverified{% endif %}">
+                        {% if wali.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </div>
+            </div>
+            {% else %}
+            <div style="display: flex; align-items: center; justify-content: center; padding: 40px 0; color: var(--text-muted); gap: 10px;">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                No wali assigned yet
+            </div>
+            {% endif %}
         </div>
-        {% if wali %}
-        <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 8px;">
-            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
-                <span style="color: var(--text-muted); font-size: 0.88rem;">Wali Name</span>
-                <span style="font-weight: 600;">{{ wali.name }}</span>
+
+        <!-- Spouse Preferences -->
+        <div class="glass-card">
+            <div class="card-header-bar">
+                <h2 class="card-title">💍 Spouse Preferences</h2>
             </div>
-            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
-                <span style="color: var(--text-muted); font-size: 0.88rem;">Relationship</span>
-                <span style="font-weight: 600;">{{ wali.relationship }}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
-                <span style="color: var(--text-muted); font-size: 0.88rem;">Contact Number</span>
-                <span style="font-weight: 600;">{{ wali.contact_number }}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; padding: 12px 0;">
-                <span style="color: var(--text-muted); font-size: 0.88rem;">Status</span>
-                <span class="status-badge {% if wali.is_active %}status-verified{% else %}status-unverified{% endif %}">
-                    {% if wali.is_active %}Active{% else %}Inactive{% endif %}
-                </span>
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 8px;">
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Age Range</span>
+                    <span style="font-weight: 600; color: var(--text-main);">{{ seeker.spouse_age_range|default:"—" }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Marital Status</span>
+                    <span style="font-weight: 600; color: var(--text-main); text-align: right; max-width: 60%;">{{ seeker.spouse_marital_status|default:"—" }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Children Preference</span>
+                    <span style="font-weight: 600; color: var(--text-main);">{{ seeker.spouse_children|default:"—" }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Location Preference</span>
+                    <span style="font-weight: 600; color: var(--text-main); text-align: right; max-width: 60%;">{{ seeker.spouse_location|default:"—" }}</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 0;">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Desired Qualities</span>
+                    <p style="font-size: 0.88rem; color: var(--text-main); line-height: 1.5; margin-top: 4px; margin-bottom: 0; background: var(--bg-hover); padding: 12px; border-radius: 8px; border-left: 3px solid var(--primary);">
+                        {{ seeker.spouse_desired_qualities|default:"No specific qualities requested." }}
+                    </p>
+                </div>
             </div>
         </div>
-        {% else %}
-        <div style="display: flex; align-items: center; justify-content: center; padding: 40px 0; color: var(--text-muted); gap: 10px;">
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            No wali assigned yet
+
+        <!-- Handling & WhatsApp Call to Action -->
+        <div class="glass-card" style="border: 1.5px solid var(--primary-light); background: linear-gradient(135deg, #fff 0%, #F1F8F5 100%);">
+            <div class="card-header-bar">
+                <h2 class="card-title" style="color: var(--primary);">Handling & WhatsApp Chat</h2>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 8px;">
+                <div style="display: flex; justify-content: space-between; padding: 6px 0;">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Profile Handler</span>
+                    <span style="font-weight: 600; color: var(--text-main);">{{ seeker.profile_handler }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 6px 0;">
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">WhatsApp Number</span>
+                    <span style="font-weight: 600; color: var(--primary);">{{ seeker.contact_whatsapp }}</span>
+                </div>
+                <p style="font-size: 0.84rem; color: var(--text-muted); line-height: 1.5; margin: 4px 0 8px 0;">
+                    Matchmaking services are strictly paid. Express interest directly via WhatsApp link.
+                </p>
+                <a href="https://wa.me/234{{ seeker.contact_whatsapp|slice:"1:" }}" target="_blank" class="btn-custom" style="
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    text-decoration: none;
+                    background: #25D366;
+                    color: white;
+                    border: none;
+                ">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.455 5.704 1.456h.006c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                    </svg>
+                    Chat on WhatsApp
+                </a>
+            </div>
         </div>
-        {% endif %}
+
     </div>
 
 </div>

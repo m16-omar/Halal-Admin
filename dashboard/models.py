@@ -18,6 +18,37 @@ class Seeker(models.Model):
     wali_name = models.CharField(max_length=100, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Unverified')
     join_date = models.DateField()
+    
+    # Newly added detailed profile fields
+    age = models.IntegerField(null=True, blank=True)
+    state_of_origin = models.CharField(max_length=100, blank=True)
+    currently_based_in = models.CharField(max_length=100, blank=True)
+    tribe = models.CharField(max_length=50, blank=True)
+    marital_status = models.CharField(max_length=30, blank=True)
+    children = models.CharField(max_length=50, blank=True)
+    education = models.CharField(max_length=100, blank=True)
+    occupation = models.CharField(max_length=100, blank=True)
+    blood_group = models.CharField(max_length=10, blank=True)
+    genotype = models.CharField(max_length=10, blank=True)
+    health_status = models.CharField(max_length=255, blank=True)
+    islamic_level = models.CharField(max_length=255, blank=True)
+    mode_of_dressing = models.CharField(max_length=255, blank=True)
+    appearance = models.CharField(max_length=255, blank=True)
+    open_to_polygamy = models.CharField(max_length=10, default='No')
+    willing_to_relocate = models.CharField(max_length=10, default='No')
+    marriage_timeline = models.CharField(max_length=100, blank=True)
+    about_me = models.TextField(blank=True)
+    
+    # Spouse Preference fields
+    spouse_age_range = models.CharField(max_length=50, blank=True)
+    spouse_marital_status = models.CharField(max_length=100, blank=True)
+    spouse_children = models.CharField(max_length=50, blank=True)
+    spouse_location = models.CharField(max_length=255, blank=True)
+    spouse_desired_qualities = models.TextField(blank=True)
+    
+    # Handling and contact details
+    profile_handler = models.CharField(max_length=100, default='HalalPairs by UmmuBilal')
+    contact_whatsapp = models.CharField(max_length=20, default='07045859388')
 
     def __str__(self):
         return self.full_name
