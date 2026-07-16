@@ -41,9 +41,34 @@
         </div>
 
         <!-- Quick action -->
-        <div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            {% if seeker.is_trashed %}
+            <!-- Restore from trash -->
+            <form method="POST" action="{% url 'seekers' %}" style="margin: 0;">
+                {% csrf_token %}
+                <input type="hidden" name="seeker_id" value="{{ seeker.id }}">
+                <input type="hidden" name="action" value="restore">
+                <input type="hidden" name="redirect_to" value="detail">
+                <button type="submit" class="btn-custom" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89H18v3"/></svg>
+                    Restore Seeker
+                </button>
+            </form>
+            <!-- Delete permanently -->
+            <form method="POST" action="{% url 'seekers' %}" style="margin: 0;">
+                {% csrf_token %}
+                <input type="hidden" name="seeker_id" value="{{ seeker.id }}">
+                <input type="hidden" name="action" value="delete_permanent">
+                <button type="submit" class="btn-custom btn-secondary" style="display: inline-flex; align-items: center; gap: 8px; color: #dc2626; border-color: #fca5a5; background: rgba(220,38,38,0.05);"
+                    onclick="return confirm('Permanently delete {{ seeker.full_name }}? This action is irreversible.')">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    Delete Permanently
+                </button>
+            </form>
+            {% else %}
+            <!-- Normal verify/deactivate -->
             {% if seeker.status != 'Verified' %}
-            <form method="POST" action="{% url 'seekers' %}">
+            <form method="POST" action="{% url 'seekers' %}" style="margin: 0;">
                 {% csrf_token %}
                 <input type="hidden" name="seeker_id" value="{{ seeker.id }}">
                 <input type="hidden" name="action" value="verify">
@@ -56,7 +81,7 @@
                 </button>
             </form>
             {% else %}
-            <form method="POST" action="{% url 'seekers' %}">
+            <form method="POST" action="{% url 'seekers' %}" style="margin: 0;">
                 {% csrf_token %}
                 <input type="hidden" name="seeker_id" value="{{ seeker.id }}">
                 <input type="hidden" name="action" value="deactivate">
@@ -66,6 +91,18 @@
                         <path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
                     </svg>
                     Deactivate
+                </button>
+            </form>
+            {% endif %}
+            <!-- Move to trash -->
+            <form method="POST" action="{% url 'seekers' %}" style="margin: 0;">
+                {% csrf_token %}
+                <input type="hidden" name="seeker_id" value="{{ seeker.id }}">
+                <input type="hidden" name="action" value="trash">
+                <button type="submit" class="btn-custom btn-secondary" style="display: inline-flex; align-items: center; gap: 8px; color: #dc2626; border-color: #fca5a5; background: rgba(220,38,38,0.05);"
+                    onclick="return confirm('Move {{ seeker.full_name }} to Trash?')">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    Move to Trash
                 </button>
             </form>
             {% endif %}

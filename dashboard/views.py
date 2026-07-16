@@ -77,30 +77,47 @@ def seekers_view(request):
             seeker.status = 'Unverified'
             seeker.save()
             messages.warning(request, f"Seeker {seeker.full_name} has been suspended.")
+        elif action == 'trash':
+            seeker.is_trashed = True
+            seeker.save()
+            messages.warning(request, f"Seeker {seeker.full_name} has been moved to Trash.")
+        elif action == 'restore':
+            seeker.is_trashed = False
+            seeker.save()
+            messages.success(request, f"Seeker {seeker.full_name} has been restored.")
+        elif action == 'delete_permanent':
+            seeker.delete()
+            messages.error(request, f"Seeker {seeker.full_name} has been permanently deleted.")
+            return redirect('seekers')
         # Redirect back to detail page if action came from there
         if redirect_to == 'detail':
             return redirect('seeker_detail', pk=seeker.id)
         return redirect('seekers')
 
     search_query = request.GET.get('search', '')
-    tab_filter   = request.GET.get('tab', 'all')   # all | grooms | brides | pending
+    tab_filter   = request.GET.get('tab', 'all')   # all | grooms | brides | pending | trash
 
-    all_seekers = Seeker.objects.all()
+    active_seekers = Seeker.objects.filter(is_trashed=False)
+    trashed_seekers = Seeker.objects.filter(is_trashed=True)
 
     # Tab counts
-    total_count   = all_seekers.count()
-    grooms_count  = all_seekers.filter(gender='Male').count()
-    brides_count  = all_seekers.filter(gender='Female').count()
-    pending_count = all_seekers.filter(status='Pending').count()
+    total_count   = active_seekers.count()
+    grooms_count  = active_seekers.filter(gender='Male').count()
+    brides_count  = active_seekers.filter(gender='Female').count()
+    pending_count = active_seekers.filter(status='Pending').count()
+    trash_count   = trashed_seekers.count()
 
     # Apply tab filter
-    seekers = all_seekers.order_by('-id')
-    if tab_filter == 'grooms':
-        seekers = seekers.filter(gender='Male')
-    elif tab_filter == 'brides':
-        seekers = seekers.filter(gender='Female')
-    elif tab_filter == 'pending':
-        seekers = seekers.filter(status='Pending')
+    if tab_filter == 'trash':
+        seekers = trashed_seekers.order_by('-id')
+    else:
+        seekers = active_seekers.order_by('-id')
+        if tab_filter == 'grooms':
+            seekers = seekers.filter(gender='Male')
+        elif tab_filter == 'brides':
+            seekers = seekers.filter(gender='Female')
+        elif tab_filter == 'pending':
+            seekers = seekers.filter(status='Pending')
 
     # Apply search
     if search_query:
@@ -117,9 +134,11 @@ def seekers_view(request):
         'grooms_count':  grooms_count,
         'brides_count':  brides_count,
         'pending_count': pending_count,
-        'active_page':   'seekers',
+        'trash_count':   trash_count,
+        'active_page':   'trash' if tab_filter == 'trash' else 'seekers',
     }
     return render(request, 'dashboard/seekers.html', context)
+
 
 
 
@@ -545,7 +564,7 @@ def api_seekers(request):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
-    seekers = Seeker.objects.all().order_by('-id')
+    seekers = Seeker.objects.filter(is_trashed=False).order_by('-id')
     gender = request.GET.get('gender', '')
     if gender:
         seekers = seekers.filter(gender=gender)

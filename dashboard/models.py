@@ -18,6 +18,7 @@ class Seeker(models.Model):
     wali_name = models.CharField(max_length=100, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Unverified')
     join_date = models.DateField()
+    is_trashed = models.BooleanField(default=False)
     
     # Newly added detailed profile fields
     age = models.IntegerField(null=True, blank=True)
