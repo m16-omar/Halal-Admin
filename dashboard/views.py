@@ -450,10 +450,45 @@ def api_login(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            phone = data.get('phone', '')
+            otp = data.get('otp', '')
             email = data.get('email', '')
             password = data.get('password', '')
             
-            # Try to lookup Seeker by email
+            # 1. Phone + OTP Login Flow
+            if phone and otp:
+                if otp != '123456':
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': 'Invalid OTP code. Please enter 123456.'
+                    }, status=400)
+                
+                seeker = Seeker.objects.filter(phone_number=phone).first()
+                if not seeker:
+                    clean_phone = phone.replace('+234', '').strip()
+                    seeker = Seeker.objects.filter(phone_number__contains=clean_phone).first()
+                
+                if seeker:
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': 'Logged in successfully via OTP',
+                        'user': {
+                            'id': seeker.id,
+                            'full_name': seeker.full_name,
+                            'gender': seeker.gender,
+                            'state': seeker.state,
+                            'status': seeker.status,
+                            'wali_name': seeker.wali_name,
+                            'phone_number': seeker.phone_number,
+                        }
+                    })
+                else:
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': 'No account found with this phone number. Please register first.'
+                    }, status=404)
+
+            # 2. Email + Password Login Flow
             seeker = Seeker.objects.filter(email__iexact=email).first()
             
             # Fallback for seeded database seekers that don't have an email yet
@@ -484,6 +519,7 @@ def api_login(request):
                             'state': seeker.state,
                             'status': seeker.status,
                             'wali_name': seeker.wali_name,
+                            'phone_number': seeker.phone_number,
                         }
                     })
                 else:
@@ -515,6 +551,13 @@ def api_seekers(request):
                     'message': 'An account with this email address already exists.'
                 }, status=400)
                 
+            phone_number = data.get('phone_number', '')
+            if phone_number and Seeker.objects.filter(phone_number=phone_number).exists():
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'An account with this phone number already exists.'
+                }, status=400)
+
             full_name = data.get('full_name', '')
             gender_val = data.get('gender', '')
             if gender_val.lower() == 'groom':
@@ -532,6 +575,7 @@ def api_seekers(request):
                 full_name=full_name,
                 email=email,
                 password=password,
+                phone_number=phone_number,
                 gender=gender,
                 state=state,
                 wali_name=wali_name,
@@ -559,6 +603,7 @@ def api_seekers(request):
                     'state': seeker.state,
                     'status': seeker.status,
                     'wali_name': seeker.wali_name,
+                    'phone_number': seeker.phone_number,
                 }
             })
         except Exception as e:
