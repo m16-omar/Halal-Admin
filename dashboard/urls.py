@@ -19,6 +19,7 @@ urlpatterns = [
     path('api/login/', views.api_login, name='api_login'),
     path('api/seekers/', views.api_seekers, name='api_seekers'),
     path('api/walis/register/', views.api_register_wali, name='api_register_wali'),
+    path('api/user/status/', views.api_get_user_status, name='api_get_user_status'),
     path('api/verify/', views.api_submit_verification, name='api_submit_verification'),
     path('api/premium-upgrade/', views.api_premium_upgrade, name='api_premium_upgrade'),
     path('api/matches/<int:match_id>/audit-modal/', views.chat_audit_modal_partial, name='chat_audit_modal_partial'),

@@ -644,6 +644,52 @@ def api_register_wali(request):
     return JsonResponse({'status': 'error', 'message': 'Only POST method is allowed'}, status=405)
 
 @csrf_exempt
+def api_get_user_status(request):
+    if request.method == 'GET':
+        user_id = request.GET.get('id')
+        role = request.GET.get('role', 'seeker')
+        
+        if not user_id:
+            return JsonResponse({'status': 'error', 'message': 'Missing user id'}, status=400)
+            
+        try:
+            if role == 'wali':
+                wali = Wali.objects.filter(id=user_id).first()
+                if wali:
+                    return JsonResponse({
+                        'status': 'success',
+                        'user': {
+                            'id': wali.id,
+                            'full_name': wali.name,
+                            'email': wali.email,
+                            'phone_number': wali.contact_number,
+                            'relationship': wali.relationship,
+                            'role': 'wali',
+                            'ward_name': wali.seeker.full_name,
+                        }
+                    })
+            else:
+                seeker = Seeker.objects.filter(id=user_id).first()
+                if seeker:
+                    return JsonResponse({
+                        'status': 'success',
+                        'user': {
+                            'id': seeker.id,
+                            'full_name': seeker.full_name,
+                            'gender': seeker.gender,
+                            'state': seeker.state,
+                            'status': seeker.status,
+                            'wali_name': seeker.wali_name,
+                            'phone_number': seeker.phone_number,
+                            'role': 'seeker',
+                        }
+                    })
+            return JsonResponse({'status': 'error', 'message': 'User not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Only GET method is allowed'}, status=405)
+
+@csrf_exempt
 def api_seekers(request):
     if request.method == 'POST':
         try:
