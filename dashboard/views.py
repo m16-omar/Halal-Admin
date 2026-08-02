@@ -724,6 +724,19 @@ def api_seekers(request):
             wali_name = data.get('wali_name', '')
             status = data.get('status', 'Unverified')
             
+            # Map age group to a default numeric age
+            age_group = data.get('age_group', '')
+            age = None
+            if age_group == '18-25':
+                age = 22
+            elif age_group == '26-35':
+                age = 30
+            elif age_group == '36+':
+                age = 40
+            
+            lga = data.get('lga', '')
+            currently_based_in = f"{lga}, {state}" if lga and state else (lga or state)
+            
             seeker = Seeker.objects.create(
                 full_name=full_name,
                 email=email,
@@ -733,6 +746,13 @@ def api_seekers(request):
                 state=state,
                 wali_name=wali_name,
                 status=status,
+                age=age,
+                state_of_origin=state,
+                currently_based_in=currently_based_in,
+                occupation=data.get('occupation', ''),
+                islamic_level=data.get('practice_level', ''),
+                marriage_timeline=data.get('timeline', ''),
+                about_me=data.get('expectations', ''),
                 join_date=timezone.now().date()
             )
             
