@@ -61,6 +61,8 @@ class Wali(models.Model):
     relationship = models.CharField(max_length=50)
     contact_number = models.CharField(max_length=20)
     is_active = models.BooleanField(default=True)
+    email = models.EmailField(unique=True, null=True, blank=True)
+    password = models.CharField(max_length=128, null=True, blank=True)
 
     def __str__(self):
         return f"{self.name} ({self.relationship} of {self.seeker.full_name})"

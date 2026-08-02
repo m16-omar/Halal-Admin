@@ -463,6 +463,7 @@ def api_login(request):
                         'message': 'Invalid OTP code. Please enter 123456.'
                     }, status=400)
                 
+                # Check Seeker first
                 seeker = Seeker.objects.filter(phone_number=phone).first()
                 if not seeker:
                     clean_phone = phone.replace('+234', '').strip()
@@ -480,15 +481,38 @@ def api_login(request):
                             'status': seeker.status,
                             'wali_name': seeker.wali_name,
                             'phone_number': seeker.phone_number,
+                            'role': 'seeker',
                         }
                     })
-                else:
+                
+                # Check Wali
+                wali = Wali.objects.filter(contact_number=phone).first()
+                if not wali:
+                    clean_phone = phone.replace('+234', '').strip()
+                    wali = Wali.objects.filter(contact_number__contains=clean_phone).first()
+                    
+                if wali:
                     return JsonResponse({
-                        'status': 'error',
-                        'message': 'No account found with this phone number. Please register first.'
-                    }, status=404)
+                        'status': 'success',
+                        'message': 'Logged in successfully via OTP',
+                        'user': {
+                            'id': wali.id,
+                            'full_name': wali.name,
+                            'email': wali.email,
+                            'phone_number': wali.contact_number,
+                            'relationship': wali.relationship,
+                            'role': 'wali',
+                            'ward_name': wali.seeker.full_name,
+                        }
+                    })
+                
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'No account found with this phone number. Please register first.'
+                }, status=404)
 
             # 2. Email + Password Login Flow
+            # Check Seeker first
             seeker = Seeker.objects.filter(email__iexact=email).first()
             
             # Fallback for seeded database seekers that don't have an email yet
@@ -520,6 +544,7 @@ def api_login(request):
                             'status': seeker.status,
                             'wali_name': seeker.wali_name,
                             'phone_number': seeker.phone_number,
+                            'role': 'seeker',
                         }
                     })
                 else:
@@ -527,13 +552,95 @@ def api_login(request):
                         'status': 'error',
                         'message': 'Incorrect password.'
                     }, status=401)
-            else:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Account not found. Please register first.'
-                }, status=401)
+            
+            # Check Wali
+            wali = Wali.objects.filter(email__iexact=email).first()
+            if wali:
+                expected_password = wali.password or 'password123'
+                if password == expected_password:
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': 'Logged in successfully',
+                        'user': {
+                            'id': wali.id,
+                            'full_name': wali.name,
+                            'email': wali.email,
+                            'phone_number': wali.contact_number,
+                            'relationship': wali.relationship,
+                            'role': 'wali',
+                            'ward_name': wali.seeker.full_name,
+                        }
+                    })
+                else:
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': 'Incorrect password.'
+                    }, status=401)
+            
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Account not found. Please register first.'
+            }, status=401)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Only POST method is allowed'}, status=405)
+
+@csrf_exempt
+def api_register_wali(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            name = data.get('name', '').strip()
+            email = data.get('email', '').strip()
+            password = data.get('password', '').strip()
+            phone = data.get('phone', '').strip()
+            relationship = data.get('relationship', '').strip()
+            ward_email = data.get('ward_email', '').strip()
+            
+            if not name or not email or not password or not phone or not relationship or not ward_email:
+                return JsonResponse({'status': 'error', 'message': 'All fields are required.'}, status=400)
+                
+            if Wali.objects.filter(email__iexact=email).exists():
+                return JsonResponse({'status': 'error', 'message': 'A Wali with this email already exists.'}, status=400)
+                
+            # Find the ward (seeker)
+            seeker = Seeker.objects.filter(email__iexact=ward_email).first()
+            if not seeker:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f'No Seeker found with email: {ward_email}. Your ward must register first.'
+                }, status=400)
+                
+            # Create Wali
+            wali = Wali.objects.create(
+                name=name,
+                email=email,
+                password=password,
+                contact_number=phone,
+                relationship=relationship,
+                seeker=seeker
+            )
+            
+            # Link Seeker to Wali
+            seeker.wali_name = name
+            seeker.save()
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Wali registered successfully',
+                'user': {
+                    'id': wali.id,
+                    'full_name': wali.name,
+                    'email': wali.email,
+                    'phone_number': wali.contact_number,
+                    'relationship': wali.relationship,
+                    'role': 'wali',
+                    'ward_name': seeker.full_name,
+                }
+            })
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+            
     return JsonResponse({'status': 'error', 'message': 'Only POST method is allowed'}, status=405)
 
 @csrf_exempt
