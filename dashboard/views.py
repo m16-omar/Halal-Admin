@@ -7,6 +7,80 @@ import json
 from django.utils import timezone
 from .models import Seeker, Wali, Imam, Match, ChatMessage, Report, VerificationRequest, RevenueTransaction, Mosque
 
+def serialize_seeker(seeker):
+    return {
+        'id': seeker.id,
+        'full_name': seeker.full_name,
+        'gender': seeker.gender,
+        'state': seeker.state,
+        'status': seeker.status,
+        'wali_name': seeker.wali_name,
+        'phone_number': seeker.phone_number,
+        'role': 'seeker',
+        'email': seeker.email or '',
+        'age': seeker.age or 0,
+        'occupation': seeker.occupation or '',
+        'education': seeker.education or '',
+    }
+
+def serialize_wali(wali):
+    return {
+        'id': wali.id,
+        'full_name': wali.name,
+        'email': wali.email,
+        'phone_number': wali.contact_number,
+        'relationship': wali.relationship,
+        'role': 'wali',
+        'ward_name': wali.seeker.full_name if wali.seeker else '',
+    }
+
+@csrf_exempt
+def api_update_user(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            user_id = data.get('id')
+            role = data.get('role', 'seeker')
+            
+            if not user_id:
+                return JsonResponse({'status': 'error', 'message': 'Missing user id'}, status=400)
+                
+            if role == 'wali':
+                wali = Wali.objects.filter(id=user_id).first()
+                if wali:
+                    wali.name = data.get('full_name', wali.name)
+                    wali.email = data.get('email', wali.email)
+                    wali.contact_number = data.get('phone_number', wali.contact_number)
+                    wali.save()
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': 'Profile updated successfully',
+                        'user': serialize_wali(wali)
+                    })
+            else:
+                seeker = Seeker.objects.filter(id=user_id).first()
+                if seeker:
+                    seeker.full_name = data.get('full_name', seeker.full_name)
+                    seeker.email = data.get('email', seeker.email)
+                    seeker.phone_number = data.get('phone_number', seeker.phone_number)
+                    seeker.state = data.get('state', seeker.state)
+                    
+                    if 'age' in data and data.get('age') is not None:
+                        seeker.age = int(data.get('age'))
+                    seeker.occupation = data.get('occupation', seeker.occupation)
+                    seeker.education = data.get('education', seeker.education)
+                    
+                    seeker.save()
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': 'Profile updated successfully',
+                        'user': serialize_seeker(seeker)
+                    })
+            return JsonResponse({'status': 'error', 'message': 'User not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Only POST method is allowed'}, status=405)
+
 def dashboard_overview(request):
     # Retrieve stats with base offset to align with Lovable Dashboard UI numbers
     total_seekers = Seeker.objects.count()
@@ -473,16 +547,7 @@ def api_login(request):
                     return JsonResponse({
                         'status': 'success',
                         'message': 'Logged in successfully via OTP',
-                        'user': {
-                            'id': seeker.id,
-                            'full_name': seeker.full_name,
-                            'gender': seeker.gender,
-                            'state': seeker.state,
-                            'status': seeker.status,
-                            'wali_name': seeker.wali_name,
-                            'phone_number': seeker.phone_number,
-                            'role': 'seeker',
-                        }
+                        'user': serialize_seeker(seeker)
                     })
                 
                 # Check Wali
@@ -495,15 +560,7 @@ def api_login(request):
                     return JsonResponse({
                         'status': 'success',
                         'message': 'Logged in successfully via OTP',
-                        'user': {
-                            'id': wali.id,
-                            'full_name': wali.name,
-                            'email': wali.email,
-                            'phone_number': wali.contact_number,
-                            'relationship': wali.relationship,
-                            'role': 'wali',
-                            'ward_name': wali.seeker.full_name,
-                        }
+                        'user': serialize_wali(wali)
                     })
                 
                 return JsonResponse({
@@ -536,16 +593,7 @@ def api_login(request):
                     return JsonResponse({
                         'status': 'success',
                         'message': 'Logged in successfully',
-                        'user': {
-                            'id': seeker.id,
-                            'full_name': seeker.full_name,
-                            'gender': seeker.gender,
-                            'state': seeker.state,
-                            'status': seeker.status,
-                            'wali_name': seeker.wali_name,
-                            'phone_number': seeker.phone_number,
-                            'role': 'seeker',
-                        }
+                        'user': serialize_seeker(seeker)
                     })
                 else:
                     return JsonResponse({
@@ -561,15 +609,7 @@ def api_login(request):
                     return JsonResponse({
                         'status': 'success',
                         'message': 'Logged in successfully',
-                        'user': {
-                            'id': wali.id,
-                            'full_name': wali.name,
-                            'email': wali.email,
-                            'phone_number': wali.contact_number,
-                            'relationship': wali.relationship,
-                            'role': 'wali',
-                            'ward_name': wali.seeker.full_name,
-                        }
+                        'user': serialize_wali(wali)
                     })
                 else:
                     return JsonResponse({
@@ -658,31 +698,14 @@ def api_get_user_status(request):
                 if wali:
                     return JsonResponse({
                         'status': 'success',
-                        'user': {
-                            'id': wali.id,
-                            'full_name': wali.name,
-                            'email': wali.email,
-                            'phone_number': wali.contact_number,
-                            'relationship': wali.relationship,
-                            'role': 'wali',
-                            'ward_name': wali.seeker.full_name,
-                        }
+                        'user': serialize_wali(wali)
                     })
             else:
                 seeker = Seeker.objects.filter(id=user_id).first()
                 if seeker:
                     return JsonResponse({
                         'status': 'success',
-                        'user': {
-                            'id': seeker.id,
-                            'full_name': seeker.full_name,
-                            'gender': seeker.gender,
-                            'state': seeker.state,
-                            'status': seeker.status,
-                            'wali_name': seeker.wali_name,
-                            'phone_number': seeker.phone_number,
-                            'role': 'seeker',
-                        }
+                        'user': serialize_seeker(seeker)
                     })
             return JsonResponse({'status': 'error', 'message': 'User not found'}, status=404)
         except Exception as e:
@@ -769,15 +792,7 @@ def api_seekers(request):
             return JsonResponse({
                 'status': 'success',
                 'message': 'Seeker registered successfully',
-                'user': {
-                    'id': seeker.id,
-                    'full_name': seeker.full_name,
-                    'gender': seeker.gender,
-                    'state': seeker.state,
-                    'status': seeker.status,
-                    'wali_name': seeker.wali_name,
-                    'phone_number': seeker.phone_number,
-                }
+                'user': serialize_seeker(seeker)
             })
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
@@ -828,13 +843,7 @@ def api_submit_verification(request):
             return JsonResponse({
                 'status': 'success',
                 'message': 'Verification request submitted successfully',
-                'user': {
-                    'id': seeker.id,
-                    'full_name': seeker.full_name,
-                    'gender': seeker.gender,
-                    'state': seeker.state,
-                    'status': seeker.status,
-                }
+                'user': serialize_seeker(seeker)
             })
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
@@ -883,14 +892,7 @@ def api_premium_upgrade(request):
             return JsonResponse({
                 'status': 'success',
                 'message': 'Upgrade to Tier 1 Premium completed successfully',
-                'user': {
-                    'id': seeker.id,
-                    'full_name': seeker.full_name,
-                    'gender': seeker.gender,
-                    'state': seeker.state,
-                    'status': seeker.status,
-                    'wali_name': seeker.wali_name,
-                }
+                'user': serialize_seeker(seeker)
             })
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
