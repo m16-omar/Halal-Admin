@@ -21,6 +21,8 @@ def serialize_seeker(seeker):
         'age': seeker.age or 0,
         'occupation': seeker.occupation or '',
         'education': seeker.education or '',
+        'islamic_level': seeker.islamic_level or '',
+        'mode_of_dressing': seeker.mode_of_dressing or '',
     }
 
 def serialize_wali(wali):
@@ -69,6 +71,8 @@ def api_update_user(request):
                         seeker.age = int(data.get('age'))
                     seeker.occupation = data.get('occupation', seeker.occupation)
                     seeker.education = data.get('education', seeker.education)
+                    seeker.islamic_level = data.get('islamic_level', seeker.islamic_level)
+                    seeker.mode_of_dressing = data.get('mode_of_dressing', seeker.mode_of_dressing)
                     
                     seeker.save()
                     return JsonResponse({
