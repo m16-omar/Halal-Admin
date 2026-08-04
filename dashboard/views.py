@@ -23,6 +23,24 @@ def serialize_seeker(seeker):
         'education': seeker.education or '',
         'islamic_level': seeker.islamic_level or '',
         'mode_of_dressing': seeker.mode_of_dressing or '',
+        'state_of_origin': seeker.state_of_origin or '',
+        'currently_based_in': seeker.currently_based_in or '',
+        'tribe': seeker.tribe or '',
+        'marital_status': seeker.marital_status or '',
+        'children': seeker.children or '',
+        'about_me': seeker.about_me or '',
+        'spouse_age_range': seeker.spouse_age_range or '',
+        'spouse_desired_qualities': seeker.spouse_desired_qualities or '',
+        'spouse_marital_status': seeker.spouse_marital_status or '',
+        'spouse_children': seeker.spouse_children or '',
+        'spouse_location': seeker.spouse_location or '',
+        'blood_group': seeker.blood_group or '',
+        'genotype': seeker.genotype or '',
+        'health_status': seeker.health_status or '',
+        'appearance': seeker.appearance or '',
+        'open_to_polygamy': seeker.open_to_polygamy or '',
+        'willing_to_relocate': seeker.willing_to_relocate or '',
+        'marriage_timeline': seeker.marriage_timeline or '',
     }
 
 def serialize_wali(wali):
@@ -73,7 +91,15 @@ def api_update_user(request):
                     seeker.education = data.get('education', seeker.education)
                     seeker.islamic_level = data.get('islamic_level', seeker.islamic_level)
                     seeker.mode_of_dressing = data.get('mode_of_dressing', seeker.mode_of_dressing)
-                    
+                    # Premium lifestyle fields
+                    seeker.blood_group = data.get('blood_group', seeker.blood_group)
+                    seeker.genotype = data.get('genotype', seeker.genotype)
+                    seeker.health_status = data.get('health_status', seeker.health_status)
+                    seeker.appearance = data.get('appearance', seeker.appearance)
+                    seeker.open_to_polygamy = data.get('open_to_polygamy', seeker.open_to_polygamy)
+                    seeker.willing_to_relocate = data.get('willing_to_relocate', seeker.willing_to_relocate)
+                    seeker.marriage_timeline = data.get('marriage_timeline', seeker.marriage_timeline)
+
                     seeker.save()
                     return JsonResponse({
                         'status': 'success',
@@ -898,6 +924,41 @@ def api_premium_upgrade(request):
                 'message': 'Upgrade to Tier 1 Premium completed successfully',
                 'user': serialize_seeker(seeker)
             })
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Only POST method is allowed'}, status=405)
+
+
+@csrf_exempt
+def api_change_password(request):
+    """Allow a seeker or wali to change their account password."""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            seeker_id = data.get('seeker_id')
+            role = data.get('role', 'seeker')
+            old_password = data.get('old_password', '')
+            new_password = data.get('new_password', '')
+
+            if not seeker_id or not old_password or not new_password:
+                return JsonResponse({'status': 'error', 'message': 'Missing required fields'}, status=400)
+
+            if len(new_password) < 6:
+                return JsonResponse({'status': 'error', 'message': 'New password must be at least 6 characters'}, status=400)
+
+            if role == 'wali':
+                user_obj = get_object_or_404(Wali, id=seeker_id)
+            else:
+                user_obj = get_object_or_404(Seeker, id=seeker_id)
+
+            expected_password = user_obj.password or 'password123'
+            if old_password != expected_password:
+                return JsonResponse({'status': 'error', 'message': 'Current password is incorrect'}, status=400)
+
+            user_obj.password = new_password
+            user_obj.save()
+
+            return JsonResponse({'status': 'success', 'message': 'Password changed successfully'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
     return JsonResponse({'status': 'error', 'message': 'Only POST method is allowed'}, status=405)
