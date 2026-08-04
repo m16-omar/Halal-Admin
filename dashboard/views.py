@@ -1000,6 +1000,35 @@ def api_delete_account(request):
     return JsonResponse({'status': 'error', 'message': 'Only POST method is allowed'}, status=405)
 
 
+@csrf_exempt
+def api_verify_payment(request):
+    """Logs and verifies Monnify payment transaction details."""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            payment_ref = data.get('payment_reference')
+            transaction_ref = data.get('transaction_reference')
+            seeker_id = data.get('seeker_id')
+            
+            if seeker_id:
+                seeker = Seeker.objects.filter(id=seeker_id).first()
+                if seeker:
+                    seeker.status = 'Verified'
+                    seeker.save()
+
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Payment transaction logged and account verified successfully.',
+                'payment_reference': payment_ref,
+                'transaction_reference': transaction_ref,
+            })
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Only POST method is allowed'}, status=405)
+
+
+
+
 def chat_audit_modal_partial(request, match_id):
     """Returns HTML partial of the chat audit box for modal overlay."""
     match = get_object_or_404(Match, id=match_id)

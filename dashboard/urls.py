@@ -25,5 +25,6 @@ urlpatterns = [
     path('api/premium-upgrade/', views.api_premium_upgrade, name='api_premium_upgrade'),
     path('api/user/change-password/', views.api_change_password, name='api_change_password'),
     path('api/user/delete/', views.api_delete_account, name='api_delete_account'),
+    path('api/payment/verify/', views.api_verify_payment, name='api_verify_payment'),
     path('api/matches/<int:match_id>/audit-modal/', views.chat_audit_modal_partial, name='chat_audit_modal_partial'),
 ]
