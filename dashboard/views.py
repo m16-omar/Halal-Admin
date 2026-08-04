@@ -574,6 +574,11 @@ def api_login(request):
                     seeker = Seeker.objects.filter(phone_number__contains=clean_phone).first()
                 
                 if seeker:
+                    if seeker.is_trashed:
+                        return JsonResponse({
+                            'status': 'error',
+                            'message': 'This account has been deleted. You cannot log in with a deleted account.'
+                        }, status=403)
                     return JsonResponse({
                         'status': 'success',
                         'message': 'Logged in successfully via OTP',
@@ -606,11 +611,16 @@ def api_login(request):
             if not seeker:
                 name_part = email.split('@')[0].lower() if '@' in email else email.lower()
                 for s in Seeker.objects.all():
-                    if not s.email and name_part in s.full_name.lower():
+                    if not s.is_trashed and not s.email and name_part in s.full_name.lower():
                         seeker = s
                         break
             
             if seeker:
+                if seeker.is_trashed:
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': 'This account has been deleted. You cannot log in with a deleted account.'
+                    }, status=403)
                 # Validate password
                 expected_password = seeker.password or 'password123'
                 if password == expected_password:
@@ -961,6 +971,32 @@ def api_change_password(request):
             return JsonResponse({'status': 'success', 'message': 'Password changed successfully'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Only POST method is allowed'}, status=405)
+
+
+@csrf_exempt
+def api_delete_account(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            seeker_id = data.get('seeker_id')
+            if not seeker_id:
+                return JsonResponse({'status': 'error', 'message': 'Missing seeker_id'}, status=400)
+                
+            seeker = Seeker.objects.filter(id=seeker_id).first()
+            if not seeker:
+                return JsonResponse({'status': 'error', 'message': 'Seeker not found'}, status=404)
+                
+            seeker.is_trashed = True
+            seeker.save()
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Account successfully soft-deleted and moved to trash.'
+            })
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+            
     return JsonResponse({'status': 'error', 'message': 'Only POST method is allowed'}, status=405)
 
 
